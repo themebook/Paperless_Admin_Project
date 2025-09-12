@@ -1,0 +1,54 @@
+<!-- File: src/main/resources/templates/login.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인 · 신문고 백오피스</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/login/css/login.css}" />
+</head>
+
+<body>
+
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <div class="auth-brand">
+        <div class="brand-badge" aria-hidden="true"></div>
+        <strong>신문고 백오피스</strong>
+      </div>
+
+      <!-- <div class="alert error" th:if="${param.error}">아이디 또는 비밀번호가 올바르지 않습니다.</div> -->
+      <!-- <div class="alert info" th:if="${param.logout}">정상적으로 로그아웃되었습니다.</div> -->
+
+      <form th:action="@{/admin/login}" method="post" class="auth-form">
+        <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /> -->
+
+        <div class="form-group">
+          <label for="username">사번/이메일</label>
+          <input id="username" name="username" type="text" autocomplete="username" required class="input"
+            placeholder="user@city.go.kr" />
+        </div>
+
+        <div class="form-group">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required class="input" />
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox">
+            <input type="checkbox" name="remember-me" /> 로그인 유지
+          </label>
+          <a class="link" href="#" aria-disabled="true">비밀번호 찾기</a>
+        </div>
+
+        <button class="btn primary w-full" type="submit">로그인</button>
+      </form>
+
+    </div>
+  </div>
+
+</body>
+
+</html>

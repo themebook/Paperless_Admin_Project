@@ -1,0 +1,123 @@
+.page-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.section {
+  margin-top: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.toolbar .input,
+.toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--text, #0f172a);
+}
+
+.toolbar .btn {
+  padding: 6px 10px;
+}
+
+.table-wrap {
+  padding: 0;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-wrap thead th {
+  text-align: left;
+  color: var(--muted, #64748b);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 10px;
+}
+
+.table-wrap tbody td {
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.table-wrap tbody tr:hover {
+  background: #f9fafb;
+}
+
+.col-id {
+  width: 80px;
+}
+
+.col-date,
+.col-author {
+  width: 120px;
+}
+
+.col-views,
+.col-attach {
+  width: 90px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.badge--pinned {
+  background: #eef2ff;
+  color: #1d4ed8;
+  border-color: #c7d2fe;
+}
+
+.meta-line {
+  font-size: 13px;
+  color: var(--muted, #64748b);
+  display: flex;
+  gap: 12px;
+}
+
+.attach-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.pager {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.btn.disabled {
+  pointer-events: none;
+  opacity: .5;
+}
+
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}

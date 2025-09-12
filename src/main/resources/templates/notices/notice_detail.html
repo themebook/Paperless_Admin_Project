@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>공지사항 상세</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/notice/css/notice.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">시스템 점검 안내(9/12 01:00)</h1>
+
+      <div class="card section">
+        <div class="meta-line">
+          <span>2025-09-08 10:00</span>
+          <span>작성자: <b>시스템관리자</b></span>
+          <span>조회: <b>154</b></span>
+        </div>
+      </div>
+
+      <div class="card section" style="min-height:160px;">
+        <p>안정적인 서비스 제공을 위해 아래와 같이 시스템 점검을 진행합니다.</p>
+        <ul>
+          <li><b>일시</b>: 2025년 9월 12일(금) 01:00 ~ 03:00</li>
+          <li><b>영향</b>: 점검 시간 동안 민원 접수/조회/처리가 간헐적으로 지연 또는 불가할 수 있습니다.</li>
+        </ul>
+        <p>업무에 참고 부탁드립니다. 감사합니다.</p>
+      </div>
+
+      <div class="card section">
+        <h2 class="page-title" style="font-size:15px; margin-bottom:8px;">첨부파일</h2>
+        <ul class="attach-list">
+          <li><a href="">점검안내_20250912.pdf</a></li>
+        </ul>
+      </div>
+
+      <div class="nav-row">
+        <a class="btn sm" href="">이전: 개인정보 처리방침 개정 사전 안내</a>
+        <a class="btn sm" href="">다음: 처리 지침 개정 안내</a>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="/admin/notice">목록으로</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var links = document.querySelectorAll('.nav a');
+      links.forEach(a => a.classList.remove('active'));
+      var current = document.querySelector('.nav a[href="/notices"]');
+      if (current) current.classList.add('active');
+    })();
+  </script>
+
+</body>
+
+</html>

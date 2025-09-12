@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>미배정 업무 배정(팀장 전용) · 신문고 백오피스</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/manager/css/manager.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">미배정 업무 배정 (팀장 전용)</h1>
+
+      <div class="card info-card">
+        <div>현재 <b>미배정 4건</b>이 있습니다. 선택하여 담당자에게 배정하세요.</div>
+      </div>
+
+      <div class="card section">
+        <form class="toolbar" action="#" method="get">
+          <select class="select" name="type">
+            <option value="">전체 카테고리</option>
+            <option>도로</option>
+            <option>환경</option>
+            <option>복지</option>
+            <option>안전</option>
+          </select>
+          <select class="select" name="priority">
+            <option value="">우선순위 전체</option>
+            <option>낮음</option>
+            <option>보통</option>
+            <option>높음</option>
+            <option>긴급</option>
+          </select>
+          <input class="input" type="text" name="q" placeholder="제목/접수번호 검색" />
+          <button class="btn" type="submit">검색</button>
+          <a class="btn" href="#">초기화</a>
+          <span class="spacer"></span>
+          <div class="inline">
+            <label class="muted small">일괄 배정 대상</label>
+            <select id="assigneeAll" class="select">
+              <option value="">직원 선택</option>
+              <option value="kim">김담당</option>
+              <option value="park">박담당</option>
+              <option value="lee">이담당</option>
+              <option value="choi">최담당</option>
+            </select>
+            <button class="btn primary" id="bulkAssignBtn" type="button" disabled>선택 업무 일괄 배정</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card table-wrap section">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" id="ckAll" /></th>
+              <th class="col-id">접수번호</th>
+              <th>제목</th>
+              <th class="col-type">유형</th>
+              <th class="col-due">기한</th>
+              <th class="col-priority">우선순위</th>
+              <th class="col-attach">첨부</th>
+              <th class="col-assign">배정</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" class="ck" /></td>
+              <td class="mono">#1107</td>
+              <td><a href="/admin/sinmungo_detail/1107">횡단보도 신호 지연</a></td>
+              <td>안전</td>
+              <td>09-13</td>
+              <td><span class="badge">보통</span></td>
+              <td>1</td>
+              <td class="assign-cell">
+                <select class="select assign-select">
+                  <option value="">직원 선택</option>
+                  <option value="kim">김담당</option>
+                  <option value="park">박담당</option>
+                  <option value="lee">이담당</option>
+                  <option value="choi">최담당</option>
+                </select>
+                <button class="btn sm" data-assign="#1107">배정</button>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" class="ck" /></td>
+              <td class="mono">#1106</td>
+              <td><a href="/admin/sinmungo_detail/1106">도로 노면 파손</a></td>
+              <td>도로</td>
+              <td>09-12</td>
+              <td><span class="badge">높음</span></td>
+              <td>2</td>
+              <td class="assign-cell">
+                <select class="select assign-select">
+                  <option value="">직원 선택</option>
+                  <option value="kim">김담당</option>
+                  <option value="park">박담당</option>
+                  <option value="lee">이담당</option>
+                  <option value="choi">최담당</option>
+                </select>
+                <button class="btn sm" data-assign="#1106">배정</button>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" class="ck" /></td>
+              <td class="mono">#1105</td>
+              <td><a href="/admin/sinmungo_detail/1105">공원 쓰레기 수거</a></td>
+              <td>환경</td>
+              <td>09-14</td>
+              <td><span class="badge">낮음</span></td>
+              <td>0</td>
+              <td class="assign-cell">
+                <select class="select assign-select">
+                  <option value="">직원 선택</option>
+                  <option value="kim">김담당</option>
+                  <option value="park">박담당</option>
+                  <option value="lee">이담당</option>
+                  <option value="choi">최담당</option>
+                </select>
+                <button class="btn sm" data-assign="#1105">배정</button>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" class="ck" /></td>
+              <td class="mono">#1104</td>
+              <td><a href="/admin/sinmungo_detail/1104">경로당 누수 신고</a></td>
+              <td>복지</td>
+              <td>09-15</td>
+              <td><span class="badge">보통</span></td>
+              <td>1</td>
+              <td class="assign-cell">
+                <select class="select assign-select">
+                  <option value="">직원 선택</option>
+                  <option value="kim">김담당</option>
+                  <option value="park">박담당</option>
+                  <option value="lee">이담당</option>
+                  <option value="choi">최담당</option>
+                </select>
+                <button class="btn sm" data-assign="#1104">배정</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="assign-bar">
+          <div class="muted small">선택: <span id="selCount">0</span>건</div>
+          <!-- <div class="inline">
+            <label class="muted small">담당자</label>
+            <select id="assigneeBulk" class="select">
+              <option value="">직원 선택</option>
+              <option value="kim">김담당</option>
+              <option value="park">박담당</option>
+              <option value="lee">이담당</option>
+              <option value="choi">최담당</option>
+            </select>
+            <button class="btn primary" id="bulkAssignBtn2" type="button" disabled>일괄 배정</button>
+          </div> -->
+        </div>
+      </div>
+
+      <div class="actions section">
+        <a class="btn" href="/dashboard">대시보드로</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var links = document.querySelectorAll('.nav a');
+      links.forEach(a => a.classList.remove('active'));
+      var current = document.querySelector('.nav a[href="/admin_manager"]');
+      if (current) current.classList.add('active');
+    })();
+
+    $(function () {
+      function updateCount() {
+        const c = $('.ck:checked').length;
+        $('#selCount').text(c);
+        const hasSel = c > 0;
+        $('#bulkAssignBtn').prop('disabled', !hasSel || !$('#assigneeAll').val());
+        $('#bulkAssignBtn2').prop('disabled', !hasSel || !$('#assigneeBulk').val());
+      }
+      $('#ckAll').on('change', function () { $('.ck').prop('checked', this.checked); updateCount(); });
+      $(document).on('change', '.ck', updateCount);
+      $('#assigneeAll, #assigneeBulk').on('change', updateCount);
+
+      $('[data-assign]').on('click', function () {
+        const row = $(this).closest('tr');
+        const id = $(this).data('assign');
+        const sel = row.find('.assign-select').val();
+        if (!sel) { alert('담당자를 선택하세요.'); return; }
+        alert(id + ' 업무를 [' + sel + ']에게 배정합니다.');
+      });
+
+      // $('#bulkAssignBtn, #bulkAssignBtn2').on('click', function () {
+      //   const selTop = $('#assigneeAll').val();
+      //   const selBottom = $('#assigneeBulk').val();
+      //   const who = selTop || selBottom;
+      //   if (!who) { alert('담당자를 선택하세요.'); return; }
+      //   const ids = [];
+      //   $('.ck:checked').each(function () { ids.push($(this).closest('tr').find('.mono').text()); });
+      //   if (ids.length === 0) { alert('선택된 업무가 없습니다.'); return; }
+      //   alert('다음 업무를 [' + who + ']에게 배정합니다: ');
+      // });
+    });
+  </script>
+</body>
+
+</html>

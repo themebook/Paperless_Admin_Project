@@ -1,0 +1,287 @@
+.page-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.section {
+  margin-top: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.toolbar .input,
+.toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--text, #0f172a);
+}
+
+.toolbar .btn {
+  padding: 6px 10px;
+}
+
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.tabs a.active {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #1d4ed8;
+}
+
+.table-wrap {
+  padding: 0;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table-wrap thead th {
+  text-align: left;
+  color: var(--muted, #64748b);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 10px;
+}
+
+.table-wrap tbody td {
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  padding: 10px;
+  vertical-align: middle;
+}
+
+.table-wrap tbody tr:hover {
+  background: #f9fafb;
+}
+
+.col-id {
+  width: 100px;
+}
+
+.col-type {
+  width: 100px;
+}
+
+.col-status {
+  width: 120px;
+}
+
+.col-due {
+  width: 110px;
+}
+
+.col-owner {
+  width: 110px;
+}
+
+.col-priority {
+  width: 110px;
+}
+
+.col-actions {
+  width: 120px;
+}
+
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.badge--pending {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.badge--progress {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.badge--approving {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.badge--done {
+  background: #ecfdf5;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.badge--rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.badge--urgent {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color: #334155;
+}
+
+
+.pager {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.btn.disabled {
+  pointer-events: none;
+  opacity: .5;
+}
+
+
+/* Detail page */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 12px;
+}
+
+.meta-card dl {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  row-gap: 6px;
+  column-gap: 8px;
+  margin: 0;
+}
+
+.meta-card dt {
+  color: var(--muted, #64748b);
+}
+
+.meta-card dd {
+  margin: 0;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.select,
+.input {
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+}
+
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timeline li {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.timeline li:last-child {
+  border-bottom: none;
+}
+
+.timeline time {
+  width: 84px;
+  color: #64748b;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions-bar .left {
+  justify-self: start;
+}
+
+.actions-bar .center {
+  justify-self: center;
+  display: flex;
+  gap: 8px;
+}
+
+.actions-bar .btn.primary {
+  background: #1d4ed8;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+.actions-bar .btn.warn {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #f59e0b;
+}
+
+.actions-bar .btn.danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}

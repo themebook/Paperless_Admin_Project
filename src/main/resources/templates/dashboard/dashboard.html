@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>신문고 백오피스 · 대시보드</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <section class="cards" aria-label="요약 지표">
+        <div class="card kpi">
+          <div class="label">전체 민원(누적)</div>
+          <div class="value">4,821</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">오늘 접수</div>
+          <div class="value">37</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">내게 배정</div>
+          <div class="value">4</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">마감 임박(오늘/내일)</div>
+          <div class="value">2</div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="공지사항">
+        <h2>공지사항</h2>
+        <div class="card">
+          <ul class="activity-list" aria-describedby="공지설명">
+            <li><span class="activity-time mono">09-09</span><a href="/notices/1">처리 지침 개정 안내</a></li>
+            <li><span class="activity-time mono">09-08</span><a href="/notices/2">시스템 점검 안내</a></li>
+            <li><span class="activity-time mono">09-06</span><a href="/notices/3">개인정보 처리방침 개정</a></li>
+            <!-- <li th:each="n : ${noticesTop}">
+              <span class="activity-time mono" th:text="${#temporals.format(n.createdAt, 'MM-dd')}">09-09</span>
+              <a th:href="@{'/notices/' + ${n.id}}" th:text="${n.title}">처리 지침 개정 안내</a>
+            </li> -->
+            <!-- <li th:if="${noticesTop} == null" style="color:var(--muted);">표시할 공지사항이 없습니다.</li> -->
+          </ul>
+          <div style="margin-top:8px;"><a class="btn sm" th:href="@{/notices}">공지사항 더보기</a></div>
+        </div>
+      </section>
+
+      <div style="margin-top: 20px;"></div>
+
+      <div class="chart-wrap">
+        <h2>요일별 접수 및 처리 건수</h2>
+        <canvas id="trendChart" role="img" aria-label="요일별 접수 및 처리 건수"></canvas>
+        <!-- <div id="chartFallback" class="chart-fallback" hidden>차트를 불러올 수 없습니다.</div> -->
+      </div>
+
+      <!-- 내 업무 목록
+      <section id="my-tasks" class="section" aria-label="내 업무 목록">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <h2>내 업무 목록</h2>
+          <div style="display:flex; gap:8px;">
+            <a class="btn sm" th:href="@{/complaints(assignedTo=${me})}">내 업무 바로가기</a>
+          </div>
+        </div>
+        <div class="card" style="padding:0;">
+          <table aria-describedby="내업무설명">
+            <caption id="내업무설명" style="text-align:left; padding:8px 12px; color:var(--muted);">배정된 업무를 최근 순으로 표시합니다.
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col" style="width:100px;">접수번호</th>
+                <th scope="col">제목</th>
+                <th scope="col" style="width:120px;">상태</th>
+                <th scope="col" style="width:110px;">기한</th>
+                <th scope="col" style="width:110px;">우선순위</th>
+                <th scope="col" style="width:90px;">액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="t : ${myTasks}">
+                <td class="mono">#<span th:text="${t.id}">1023</span></td>
+                <td th:text="${t.title}">노면파손 보수 요청</td>
+                <td>
+                  <span class="badge" th:text="${t.status}"
+                    th:classappend="${t.status}=='진행' ? ' badge--progress' : (${t.status}=='결재중' ? ' badge--approving' : (${t.status}=='완료' ? ' badge--done' : (${t.status}=='반려' ? ' badge--rejected' : ' badge--pending')))">대기</span>
+                </td>
+                <td th:text="${t.due}">09-12</td>
+                <td>
+                  <span class="badge" th:text="${t.priority}"
+                    th:classappend="${t.priority}=='긴급' ? ' badge--rejected' : (${t.priority}=='높음' ? ' badge--progress' : '')">보통</span>
+                </td>
+                <td>
+                  <a class="btn sm" th:href="@{'/complaints/' + ${t.id}}">열기</a>
+                </td>
+              </tr>
+              <tr th:if="${myTasks} == null">
+                <td class="mono">#1023</td>
+                <td>노면파손 보수 요청</td>
+                <td><span class="badge badge--pending">대기</span></td>
+                <td>09-12</td>
+                <td><span class="badge">보통</span></td>
+                <td><a class="btn sm" href="#">열기</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section> -->
+    </main>
+  </div>
+
+  <script th:inline="javascript">
+    const chartData = [
+      { label: '월', received: 120, processed: 100 },
+      { label: '화', received: 98, processed: 90 },
+      { label: '수', received: 135, processed: 120 },
+      { label: '목', received: 110, processed: 105 },
+      { label: '금', received: 150, processed: 130 }
+    ];
+  </script>
+  <script>
+    (function initChart() {
+      const el = document.getElementById('trendChart');
+      const fallback = document.getElementById('chartFallback');
+      if (!window.Chart || !el) { if (fallback) fallback.hidden = false; return; }
+
+
+      const labels = chartData.map(d => d.label);
+      const received = chartData.map(d => d.received);
+      const processed = chartData.map(d => d.processed);
+
+
+      new Chart(el, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: '접수', data: received, borderRadius: 6, backgroundColor: 'rgba(59,130,246,0.6)' },
+            { label: '처리', data: processed, borderRadius: 6, backgroundColor: 'rgba(22,163,74,0.6)' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#374151' } }, tooltip: { enabled: true } },
+          scales: {
+            x: { ticks: { color: '#475569' }, grid: { color: '#e5e7eb' } },
+            y: { ticks: { color: '#475569' }, grid: { color: '#e5e7eb' }, beginAtZero: true }
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>
