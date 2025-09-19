@@ -39,16 +39,16 @@
         <h2>공지사항</h2>
         <div class="card">
           <ul class="activity-list" aria-describedby="공지설명">
-            <li><span class="activity-time mono">09-09</span><a href="/notices/1">처리 지침 개정 안내</a></li>
-            <li><span class="activity-time mono">09-08</span><a href="/notices/2">시스템 점검 안내</a></li>
-            <li><span class="activity-time mono">09-06</span><a href="/notices/3">개인정보 처리방침 개정</a></li>
+            <li><span class="activity-time mono">09-09</span><a href="/admin/notice_detail/1">처리 지침 개정 안내</a></li>
+            <li><span class="activity-time mono">09-08</span><a href="/admin/notice_detail/2">시스템 점검 안내</a></li>
+            <li><span class="activity-time mono">09-06</span><a href="/admin/notice_detail/3">개인정보 처리방침 개정</a></li>
             <!-- <li th:each="n : ${noticesTop}">
               <span class="activity-time mono" th:text="${#temporals.format(n.createdAt, 'MM-dd')}">09-09</span>
               <a th:href="@{'/notices/' + ${n.id}}" th:text="${n.title}">처리 지침 개정 안내</a>
             </li> -->
             <!-- <li th:if="${noticesTop} == null" style="color:var(--muted);">표시할 공지사항이 없습니다.</li> -->
           </ul>
-          <div style="margin-top:8px;"><a class="btn sm" th:href="@{/notices}">공지사항 더보기</a></div>
+          <div style="margin-top:8px;"><a class="btn sm" th:href="@{/admin/notice}">공지사항 더보기</a></div>
         </div>
       </section>
 

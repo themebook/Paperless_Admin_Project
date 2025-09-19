@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>내게 배정된 민원</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/sinmungo/css/sinmungo.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">내게 배정된 민원</h1>
+
+      <div class="section tabs">
+        <a th:href="@{/admin/sinmungo_list}">전체 민원</a>
+        <a class="active" th:href="@{|/admin/sinmungo_list/${adminId}|}">내게 배정된 민원</a>
+      </div>
+
+      <div class="stats-bar" th:if="${stats != null}">
+        <span class="stat-pill"><span class="pill-dot pill-all"></span>전체
+          <strong th:text="${stats.total   != null ? stats.total   : 0}">0</strong></span>
+        <span class="stat-pill"><span class="pill-dot pill-approve"></span>승인
+          <strong th:text="${stats.approve != null ? stats.approve : 0}">0</strong></span>
+        <span class="stat-pill"><span class="pill-dot pill-reject"></span>반려
+          <strong th:text="${stats.reject  != null ? stats.reject  : 0}">0</strong></span>
+        <span class="stat-pill"><span class="pill-dot pill-receive"></span>접수
+          <strong th:text="${stats.receive != null ? stats.receive : 0}">0</strong></span>
+        <span class="stat-pill"><span class="pill-dot pill-hold"></span>보류
+          <strong th:text="${stats.hold    != null ? stats.hold    : 0}">0</strong></span>
+      </div>
+
+      <div class="card section">
+        <form th:action="@{|/admin/sinmungo_list/${adminId}|}" method="get" class="toolbar">
+          <select name="status" class="select">
+            <option value="">전체 상태</option>
+            <option th:selected="${status=='승인'}">승인</option>
+            <option th:selected="${status=='반려'}">반려</option>
+            <option th:selected="${status=='접수'}">접수</option>
+            <option th:selected="${status=='보류'}">보류</option>
+          </select>
+
+          <input class="input" type="text" name="q" placeholder="제목/접수번호" th:value="${q}" />
+          <button class="btn" type="submit">검색</button>
+          <a class="btn" th:href="@{|/admin/sinmungo_list/${adminId}|}">초기화</a>
+
+          <input type="hidden" name="due" th:if="${due != null}" th:value="${due}" />
+        </form>
+      </div>
+
+      <div class="card table-wrap section fixed" th:with="rowCount=${pageSize}">
+        <script th:inline="text">
+          document.documentElement.style.setProperty('--row-count', '[[${rowCount}]]');
+        </script>
+
+        <table>
+          <thead>
+            <tr>
+              <th class="col-id">접수번호</th>
+              <th class="col-title">제목</th>
+              <th class="col-status">상태</th>
+              <th class="col-date">접수일</th>
+              <th class="col-date">답변일</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="it : ${items}" th:attr="data-href=@{|/admin/sinmungo_detail/${it.smgId}|}">
+              <td class="mono">#<span th:text="${it.smgId}">1023</span></td>
+
+              <td><a class="one-line" th:href="@{|/admin/sinmungo_detail/${it.smgId}|}" th:text="${it.title}">제목</a>
+              </td>
+
+              <td class="col-status">
+                <span class="state" th:switch="${it.status}">
+                  <span th:case="'접수'" class="dot recv"></span>
+                  <span th:case="'승인'" class="dot appr"></span>
+                  <span th:case="'보류'" class="dot hold"></span>
+                  <span th:case="'반려'" class="dot rej"></span>
+                  <span th:case="*"
+                    style="width:8px;height:8px;border-radius:50%;background:#cbd5e1;display:inline-block;"></span>
+                  <span th:text="${it.status != null ? it.status : '-'}">접수</span>
+                </span>
+              </td>
+
+              <td th:text="${it.createdAt != null ? #temporals.format(it.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
+              <td th:text="${it.answerDate  != null ? #temporals.format(it.answerDate , 'yyyy-MM-dd') : '-'}">-</td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(items)}">
+              <td colspan="5" style="text-align:center; color:#99a1ad;">데이터가 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <a class="btn sm"
+          th:href="@{|/admin/sinmungo_list/${adminId}(page=${currentPage > 1 ? currentPage - 1 : 1}, size=${pageSize}, q=${q}, status=${status}, due=${due})|}">
+          이전
+        </a>
+
+        <span style="font-size:13px; color:#64748b;"
+          th:text="${currentPage + ' / ' + (totalPages == 0 ? 1 : totalPages)}">1 / 1</span>
+
+        <a class="btn sm"
+          th:href="@{|/admin/sinmungo_list/${adminId}(page=${currentPage < totalPages ? currentPage + 1 : totalPages}, size=${pageSize}, q=${q}, status=${status}, due=${due})|}">
+          다음
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const current = document.querySelector('.nav a[href="/admin/sinmungo_list"]');
+      if (current) current.classList.add('active');
+    })();
+
+    (function () {
+      document.querySelectorAll('tbody tr[data-href]').forEach(tr => {
+        tr.addEventListener('click', (e) => {
+          if (e.target.closest('a')) return;
+          const href = tr.getAttribute('data-href');
+          if (href) location.href = href;
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>

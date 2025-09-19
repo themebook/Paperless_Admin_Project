@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${'민원 상세 · #' + dto.smgId}">민원 상세</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/sinmungo/css/sinmungo.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <script>
+    window.USER_NAME_MAP = {
+      1: "홍길동", 2: "김민수", 3: "박지영"
+    };
+    window.ADMIN_NAME_MAP = {
+      1: "관리자A", 2: "관리자B", 3: "관리자C"
+    };
+    function renderName(id, map) {
+      if (id == null) return "-";
+      const key = String(id);
+      return (map[key] || map[id] || null) ?? ("ID " + id);
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">
+        <span th:text="${'민원 #' + dto.smgId}">민원 #0000</span>
+        <span> · </span>
+        <span th:text="${dto.title}">제목</span>
+      </h1>
+
+      <div class="notice success" th:if="${msg != null}" th:text="${msg}" style="margin-bottom:12px;"></div>
+
+      <div class="card section">
+        <dl class="meta-card" style="display:grid;grid-template-columns:110px 1fr;row-gap:6px;column-gap:8px;margin:0;">
+          <dt style="color:#64748b;">신청인</dt>
+          <dd>
+            <span id="writerNameText">-</span>
+            <span th:if="${dto.telNum != null}" th:text="${' (' + dto.telNum + ')'}"></span>
+          </dd>
+
+          <dt style="color:#64748b;">접수일</dt>
+          <dd>
+            <span th:if="${dto.createdAt != null}"
+              th:text="${#temporals.format(dto.createdAt, 'yyyy-MM-dd HH:mm')}">-</span>
+            <span th:if="${dto.createdAt == null}">-</span>
+          </dd>
+
+          <dt style="color:#64748b;">상태</dt>
+          <dd th:switch="${dto.status}">
+            <span th:case="'접수'" class="badge badge--pending">접수</span>
+            <span th:case="'승인'" class="badge badge--success">승인</span>
+            <span th:case="'반려'" class="badge badge--warn">반려</span>
+            <span th:case="'보류'" class="badge">보류</span>
+            <span th:case="*" class="badge">-</span>
+          </dd>
+
+          <dt style="color:#64748b;">담당자</dt>
+          <dd><span id="adminNameText">-</span></dd>
+
+          <dt style="color:#64748b;">이메일</dt>
+          <dd th:text="${#strings.defaultString(dto?.noticeEmail, '-')}">-</dd>
+
+          <dt style="color:#64748b;">문자 수신</dt>
+          <dd th:text="${dto.noticeSms == 'Y' ? '동의(Y)' : (dto?.noticeSms == 'N' ? '미동의(N)' : '-')}">-</dd>
+
+          <dt style="color:#64748b;">주소</dt>
+          <dd>
+            <span th:text="${dto.postcode != null ? '[' + dto.postcode + '] ' : ''}"></span>
+            <span th:text="${dto.addr1 != null ? dto.addr1 : ''}"></span>
+            <span th:text="${dto.addr2 != null ? ' ' + dto.addr2 : ''}"></span>
+            <span th:if="${dto.postcode == null && dto.addr1 == null && dto.addr2 == null}">-</span>
+          </dd>
+        </dl>
+      </div>
+
+      <div class="card section">
+        <h2 class="page-title" style="font-size:16px;">본문</h2>
+        <div class="prose" th:utext="${#strings.escapeXml(dto.content)?.replaceAll('\n','<br/>')}"></div>
+      </div>
+
+      <div class="card section">
+        <h2 class="page-title" style="font-size:16px;">시민 답변(발송용)</h2>
+        <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10"
+          placeholder="시민에게 발송할 답변을 작성하세요."></textarea>
+        <div th:if="${dto.answerDate != null}" style="margin-top:8px; color:#64748b; font-size:13px;">
+          마지막 등록일:
+          <span th:text="${#temporals.format(dto.answerDate, 'yyyy-MM-dd HH:mm')}"></span>
+        </div>
+      </div>
+
+      <!-- 담당자 변경 (다른 페이지에서 처리하므로 주석) -->
+      <!--
+      <div class="card section">
+        <h2 class="page-title" style="font-size:16px;">담당자 변경</h2>
+        <form th:action="@{|/admin/sinmungo_detail/${dto.smgId}/assign|}" method="post"
+          style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <select class="select" name="adminId" required>
+            <option value="" th:selected="${dto.adminId == null}">담당자 선택</option>
+            <option th:each="opt : ${adminOptions}" th:value="${opt.id}" th:text="${opt.name}"
+              th:selected="${dto.adminId != null and dto.adminId == opt.id}">
+            </option>
+          </select>
+          <button class="btn primary" type="submit">변경</button>
+        </form>
+      </div>
+      -->
+
+      <div class="actions section actions-bar">
+        <div class="left">
+          <a class="btn" th:href="@{/admin/sinmungo_list}">목록으로</a>
+        </div>
+
+        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <form id="statusForm" th:action="@{|/admin/sinmungo_detail/${dto.smgId}/status|}" method="post">
+            <input type="hidden" name="action" id="statusAction" />
+            <input type="hidden" name="rejectReason" id="rejectReasonHidden" />
+          </form>
+
+          <button class="btn primary" type="button" onclick="submitStatus('approve')">승인</button>
+          <button class="btn" type="button" onclick="submitStatus('hold')">보류</button>
+          <button class="btn warn" type="button" onclick="openRejectModal()">반려</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="rejectModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rejectTitle">
+      <header id="rejectTitle">반려 사유 입력</header>
+      <div class="body">
+        <p style="margin:0 0 8px;color:#64748b;">반려 사유를 구체적으로 입력해 주세요.</p>
+        <textarea id="rejectReasonInput" class="textarea" placeholder="예) 관할 부서 아님, 추가 서류 필요 등" required></textarea>
+      </div>
+      <div class="footer">
+        <button class="btn" type="button" onclick="closeRejectModal()">취소</button>
+        <button class="btn warn" type="button" onclick="submitReject()">반려 확정</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var links = document.querySelectorAll('.nav a');
+      links.forEach(a => a.classList.remove('active'));
+      var current = document.querySelector('.nav a[href="/admin/sinmungo_list"]');
+      if (current) current.classList.add('active');
+    })();
+
+    (function () {
+      const writerId = /*[[${dto.writerId}]]*/ null;
+      const adminId = /*[[${dto.adminId}]]*/ null;
+      document.getElementById('writerNameText').textContent = renderName(writerId, window.USER_NAME_MAP);
+      document.getElementById('adminNameText').textContent = renderName(adminId, window.ADMIN_NAME_MAP);
+    })();
+
+    function submitStatus(action) {
+      if (action === 'approve') {
+        if (!confirm('승인 처리하시겠습니까?')) return;
+        document.getElementById('statusAction').value = 'approve';
+        document.getElementById('rejectReasonHidden').value = '';
+        const answer = document.getElementById('adminAnswer').value;
+        let hidden = document.getElementById('answerHidden');
+        if (!hidden) {
+          hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'adminAnswer';
+          hidden.id = 'answerHidden';
+          document.getElementById('statusForm').appendChild(hidden);
+        }
+        hidden.value = answer;
+        document.getElementById('statusForm').submit();
+        return;
+      }
+
+      if (action === 'hold') {
+        if (!confirm('보류 상태로 변경하시겠습니까?')) return;
+      }
+
+      document.getElementById('statusAction').value = action;
+      document.getElementById('rejectReasonHidden').value = '';
+      document.getElementById('statusForm').submit();
+    }
+
+    function openRejectModal() {
+      const m = document.getElementById('rejectModal');
+      m.style.display = 'flex';
+      setTimeout(() => document.getElementById('rejectReasonInput').focus(), 0);
+    }
+    function closeRejectModal() {
+      const m = document.getElementById('rejectModal');
+      m.style.display = 'none';
+      document.getElementById('rejectReasonInput').value = '';
+    }
+    function submitReject() {
+      const reason = document.getElementById('rejectReasonInput').value.trim();
+      if (!reason) { alert('반려 사유를 입력해 주세요.'); return; }
+      if (!confirm('입력한 사유로 반려 처리하시겠습니까?')) return;
+
+      document.getElementById('statusAction').value = 'reject';
+      document.getElementById('rejectReasonHidden').value = reason;
+      document.getElementById('statusForm').submit();
+    }
+  </script>
+</body>
+
+</html>
