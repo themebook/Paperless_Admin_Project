@@ -121,3 +121,111 @@
   display: flex;
   gap: 8px;
 }
+
+:root {
+  --row-h: 44px;
+  --fixed-extra: 56px;
+}
+
+.table-wrap.fixed {
+  min-height: calc(var(--row-h) * var(--row-count, 10) + var(--fixed-extra));
+}
+
+table {
+  table-layout: fixed;
+}
+
+thead th,
+tbody td {
+  padding: 0 12px;
+}
+
+table tr {
+  height: var(--row-h);
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+.one-line {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-section .input,
+.form-section .textarea,
+.form-section .select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background: #fff;
+}
+
+.form-section .input:focus,
+.form-section .textarea:focus,
+.form-section .select:focus {
+  border-color: #93c5fd;
+  outline: none;
+  box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+.form-section .textarea {
+  min-height: 200px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.form-row>div {
+  flex: 1;
+  min-width: 160px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btn.primary {
+  background: #60a5fa;
+  border-color: #60a5fa;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.field-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+}

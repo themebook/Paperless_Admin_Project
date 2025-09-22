@@ -1,27 +1,15 @@
 :root {
-  /* 라이트 모드 팔레트 */
   --bg: #f8fafc;
-  /* 배경 (slate-50) */
   --panel: #ffffff;
-  /* 카드/패널 배경 */
   --text: #0f172a;
-  /* 본문 텍스트 (slate-900) */
   --muted: #64748b;
-  /* 보조 텍스트 (slate-500) */
   --border: #e5e7eb;
-  /* 경계선 (gray-200) */
   --primary: #1d4ed8;
-  /* 포인트 블루 */
   --green: #16a34a;
-  /* 성공 */
   --red: #dc2626;
-  /* 경고/오류 */
   --amber: #d97706;
-  /* 임박 */
   --blue: #3b82f6;
-  /* 접수 색 */
   --purple: #7c3aed;
-  /* 결재중 */
 }
 
 * {

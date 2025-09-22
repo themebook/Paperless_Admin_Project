@@ -323,10 +323,11 @@
 
 :root {
   --row-h: 44px;
+  --fixed-extra: 56px;
 }
 
 .table-wrap.fixed {
-  min-height: calc(var(--row-h) * var(--row-count, 10) + 120px);
+  min-height: calc(var(--row-h) * var(--row-count, 10) + var(--fixed-extra));
 }
 
 table {

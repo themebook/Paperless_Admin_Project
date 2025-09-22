@@ -100,16 +100,28 @@
       </div>
 
       <div class="pager">
-        <a class="btn sm"
-          th:href="@{|/admin/sinmungo_list/${adminId}(page=${currentPage > 1 ? currentPage - 1 : 1}, size=${pageSize}, q=${q}, status=${status}, due=${due})|}">
+        <a class="btn sm" th:href="@{/admin/sinmungo_list/{id}(
+              id=${adminId},
+              page=${currentPage > 1 ? currentPage - 1 : 1},
+              size=${pageSize},
+              q=${q},
+              status=${status},
+              due=${due}
+            )}">
           이전
         </a>
 
         <span style="font-size:13px; color:#64748b;"
           th:text="${currentPage + ' / ' + (totalPages == 0 ? 1 : totalPages)}">1 / 1</span>
 
-        <a class="btn sm"
-          th:href="@{|/admin/sinmungo_list/${adminId}(page=${currentPage < totalPages ? currentPage + 1 : totalPages}, size=${pageSize}, q=${q}, status=${status}, due=${due})|}">
+        <a class="btn sm" th:href="@{/admin/sinmungo_list/{id}(
+              id=${adminId},
+              page=${currentPage < totalPages ? currentPage + 1 : totalPages},
+              size=${pageSize},
+              q=${q},
+              status=${status},
+              due=${due}
+            )}">
           다음
         </a>
       </div>

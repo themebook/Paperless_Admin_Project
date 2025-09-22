@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${'공지 수정 · #' + form.noticeId}">공지 수정</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/notice/css/notice.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 class="page-title" style="margin:0;">공지 수정</h1>
+        <a class="btn" th:href="@{|/admin/notice_detail/${form.noticeId}|}">상세로</a>
+      </div>
+
+      <div class="card section">
+        <div class="notice success" th:if="${msg != null}" th:text="${msg}" style="margin-bottom:12px;"></div>
+
+        <form th:action="@{|/admin/notice_edit/${form.noticeId}|}" method="post" class="form-section"
+          th:object="${form}">
+
+          <div>
+            <label for="title">제목</label>
+            <input class="input" id="title" type="text" th:field="*{title}" placeholder="제목을 입력하세요" required />
+            <div class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+          </div>
+
+          <div>
+            <label for="content">내용</label>
+            <textarea class="textarea" id="content" th:field="*{content}" rows="12" placeholder="내용을 입력하세요"
+              required></textarea>
+            <div class="field-error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label for="isPinned">상단 고정</label>
+              <select class="select" id="isPinned" th:field="*{isPinned}">
+                <option value="N">아니오</option>
+                <option value="Y">예</option>
+              </select>
+            </div>
+            <div>
+              <label for="targetAudience">대상</label>
+              <select class="select" id="targetAudience" th:field="*{targetAudience}">
+                <option value="ADMIN">직원용</option>
+                <option value="USER">사용자용</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <a class="btn" th:href="@{|/admin/notice_detail/${form.noticeId}|}">취소</a>
+            <button class="btn primary" type="submit">저장</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function activateNav() {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const current = document.querySelector('.nav a[href="/admin/notice"]');
+      if (current) current.classList.add('active');
+    })();
+  </script>
+</body>
+
+</html>
