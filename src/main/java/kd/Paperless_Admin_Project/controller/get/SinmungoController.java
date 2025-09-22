@@ -1,9 +1,9 @@
 package kd.Paperless_Admin_Project.controller.get;
 
-import kd.Paperless_Admin_Project.dto.SinmungoDetailDto;
-import kd.Paperless_Admin_Project.dto.SinmungoListDto;
-import kd.Paperless_Admin_Project.entity.Sinmungo;
-import kd.Paperless_Admin_Project.repository.SinmungoRepository;
+import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoDetailDto;
+import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto;
+import kd.Paperless_Admin_Project.entity.sinmungo.Sinmungo;
+import kd.Paperless_Admin_Project.repository.sinmungo.SinmungoRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

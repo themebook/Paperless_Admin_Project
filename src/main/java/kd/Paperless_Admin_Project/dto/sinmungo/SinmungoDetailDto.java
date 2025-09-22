@@ -1,9 +1,10 @@
-package kd.Paperless_Admin_Project.dto;
+package kd.Paperless_Admin_Project.dto.sinmungo;
 
-import kd.Paperless_Admin_Project.entity.Sinmungo;
 import lombok.*;
 
 import java.time.*;
+
+import kd.Paperless_Admin_Project.entity.sinmungo.Sinmungo;
 
 @Getter
 @Setter

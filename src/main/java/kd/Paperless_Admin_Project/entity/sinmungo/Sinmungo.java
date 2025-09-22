@@ -1,10 +1,13 @@
-package kd.Paperless_Admin_Project.entity;
+package kd.Paperless_Admin_Project.entity.sinmungo;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "SINMUNGO")
 @SequenceGenerator(name = "sinmungo_seq", sequenceName = "SEQ_SINMUNGO", allocationSize = 1)
