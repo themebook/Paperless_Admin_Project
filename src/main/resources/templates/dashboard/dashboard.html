@@ -15,23 +15,21 @@
     <header th:replace="~{fragments/topbar :: topbar}"></header>
     <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <main class="main" role="main">
+    <main class="main" style="padding-bottom: 30px;" role="main">
       <section class="cards" aria-label="요약 지표">
         <div class="card kpi">
           <div class="label">전체 민원(누적)</div>
-          <div class="value">4,821</div>
+          <div class="value" th:text="${kpiTotal != null ? #numbers.formatInteger(kpiTotal, 0, 'COMMA') : '-'}">0</div>
         </div>
         <div class="card kpi">
           <div class="label">오늘 접수</div>
-          <div class="value">37</div>
+          <div class="value"
+            th:text="${kpiTodayReceived != null ? #numbers.formatInteger(kpiTodayReceived, 0, 'COMMA') : '-'}">0</div>
         </div>
         <div class="card kpi">
           <div class="label">내게 배정</div>
-          <div class="value">4</div>
-        </div>
-        <div class="card kpi">
-          <div class="label">마감 임박(오늘/내일)</div>
-          <div class="value">2</div>
+          <div class="value" th:text="${kpiAssigned != null ? #numbers.formatInteger(kpiAssigned, 0, 'COMMA') : '-'}">0
+          </div>
         </div>
       </section>
 
@@ -39,123 +37,128 @@
         <h2>공지사항</h2>
         <div class="card">
           <ul class="activity-list" aria-describedby="공지설명">
-            <li><span class="activity-time mono">09-09</span><a href="/admin/notice_detail/1">처리 지침 개정 안내</a></li>
-            <li><span class="activity-time mono">09-08</span><a href="/admin/notice_detail/2">시스템 점검 안내</a></li>
-            <li><span class="activity-time mono">09-06</span><a href="/admin/notice_detail/3">개인정보 처리방침 개정</a></li>
-            <!-- <li th:each="n : ${noticesTop}">
-              <span class="activity-time mono" th:text="${#temporals.format(n.createdAt, 'MM-dd')}">09-09</span>
-              <a th:href="@{'/notices/' + ${n.id}}" th:text="${n.title}">처리 지침 개정 안내</a>
-            </li> -->
-            <!-- <li th:if="${noticesTop} == null" style="color:var(--muted);">표시할 공지사항이 없습니다.</li> -->
+            <li th:each="n : ${noticesTop}">
+              <span class="activity-time mono"
+                th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'MM-dd') : '--'}">--</span>
+              <a th:href="@{|/admin/notice_detail/${n.noticeId}|}" th:text="${n.title}">공지 제목</a>
+            </li>
+
+            <li th:if="${noticesTop == null or #lists.isEmpty(noticesTop)}" style="color:var(--muted);">표시할 공지사항이 없습니다.
+            </li>
           </ul>
-          <div style="margin-top:8px;"><a class="btn sm" th:href="@{/admin/notice}">공지사항 더보기</a></div>
+
+          <div style="margin-top:8px;">
+            <a class="btn sm" th:href="@{/admin/notice}">공지사항 더보기</a>
+          </div>
         </div>
       </section>
 
       <div style="margin-top: 20px;"></div>
 
-      <div class="chart-wrap">
-        <h2>요일별 접수 및 처리 건수</h2>
-        <canvas id="trendChart" role="img" aria-label="요일별 접수 및 처리 건수"></canvas>
-        <!-- <div id="chartFallback" class="chart-fallback" hidden>차트를 불러올 수 없습니다.</div> -->
+      <div class="chart-wrap" style="margin-bottom:20px;">
+        <h2>최근 7일 신문고 접수 추이</h2>
+        <div id="received7Empty" style="display:none;color:#64748b;font-size:14px;margin:8px 0;">
+          데이터가 없습니다.
+        </div>
+        <canvas id="received7Chart" role="img" aria-label="최근 7일 접수 추이"></canvas>
       </div>
 
-      <!-- 내 업무 목록
-      <section id="my-tasks" class="section" aria-label="내 업무 목록">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-          <h2>내 업무 목록</h2>
-          <div style="display:flex; gap:8px;">
-            <a class="btn sm" th:href="@{/complaints(assignedTo=${me})}">내 업무 바로가기</a>
-          </div>
+      <div style="height: 30px;"></div>
+
+      <div class="chart-wrap" style="margin-bottom: 30px;">
+        <h2>신문고 전체 상태별 분포</h2>
+        <div id="statusPieEmpty" style="display:none;color:#64748b;font-size:14px;margin:8px 0;">
+          데이터가 없습니다.
         </div>
-        <div class="card" style="padding:0;">
-          <table aria-describedby="내업무설명">
-            <caption id="내업무설명" style="text-align:left; padding:8px 12px; color:var(--muted);">배정된 업무를 최근 순으로 표시합니다.
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" style="width:100px;">접수번호</th>
-                <th scope="col">제목</th>
-                <th scope="col" style="width:120px;">상태</th>
-                <th scope="col" style="width:110px;">기한</th>
-                <th scope="col" style="width:110px;">우선순위</th>
-                <th scope="col" style="width:90px;">액션</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="t : ${myTasks}">
-                <td class="mono">#<span th:text="${t.id}">1023</span></td>
-                <td th:text="${t.title}">노면파손 보수 요청</td>
-                <td>
-                  <span class="badge" th:text="${t.status}"
-                    th:classappend="${t.status}=='진행' ? ' badge--progress' : (${t.status}=='결재중' ? ' badge--approving' : (${t.status}=='완료' ? ' badge--done' : (${t.status}=='반려' ? ' badge--rejected' : ' badge--pending')))">대기</span>
-                </td>
-                <td th:text="${t.due}">09-12</td>
-                <td>
-                  <span class="badge" th:text="${t.priority}"
-                    th:classappend="${t.priority}=='긴급' ? ' badge--rejected' : (${t.priority}=='높음' ? ' badge--progress' : '')">보통</span>
-                </td>
-                <td>
-                  <a class="btn sm" th:href="@{'/complaints/' + ${t.id}}">열기</a>
-                </td>
-              </tr>
-              <tr th:if="${myTasks} == null">
-                <td class="mono">#1023</td>
-                <td>노면파손 보수 요청</td>
-                <td><span class="badge badge--pending">대기</span></td>
-                <td>09-12</td>
-                <td><span class="badge">보통</span></td>
-                <td><a class="btn sm" href="#">열기</a></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section> -->
+        <canvas id="statusPieChart" role="img" aria-label="상태별 분포"></canvas>
+      </div>
     </main>
   </div>
 
   <script th:inline="javascript">
-    const chartData = [
-      { label: '월', received: 120, processed: 100 },
-      { label: '화', received: 98, processed: 90 },
-      { label: '수', received: 135, processed: 120 },
-      { label: '목', received: 110, processed: 105 },
-      { label: '금', received: 150, processed: 130 }
-    ];
+    const recent7 = /*[[${recent7}]]*/[];
+    const statusLabels = /*[[${statusLabels}]]*/[];
+    const statusCounts = /*[[${statusCounts}]]*/[];
+  </script>
+
+  <script>
+    (function () {
+      if (!window.Chart) return;
+      const el = document.getElementById('statusPieChart');
+      const empty = document.getElementById('statusPieEmpty');
+
+      const total = (statusCounts || []).reduce((a, b) => a + (+b || 0), 0);
+      if (total === 0) {
+        if (empty) empty.style.display = 'block';
+        if (el) el.style.display = 'none';
+        return;
+      }
+
+      new Chart(el, {
+        type: 'pie',
+        data: {
+          labels: statusLabels || ['접수', '승인', '보류', '반려'],
+          datasets: [{
+            data: statusCounts || [0, 0, 0, 0],
+            backgroundColor: [
+              '#60A5FA', // 접수 - 파스텔 블루
+              '#34D399', // 승인 - 파스텔 그린
+              '#FBBF24', // 보류 - 파스텔 옐로우
+              '#F87171'  // 반려 - 파스텔 레드
+            ]
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#374151', font: { size: 13 } } } }
+        }
+      });
+    })();
   </script>
   <script>
-    (function initChart() {
-      const el = document.getElementById('trendChart');
-      const fallback = document.getElementById('chartFallback');
-      if (!window.Chart || !el) { if (fallback) fallback.hidden = false; return; }
+    (function initBarChart() {
+      if (!window.Chart) return;
+      const el = document.getElementById('received7Chart');
+      const empty = document.getElementById('received7Empty');
+      if (!el) return;
 
+      const labels = (recent7 || []).map(d => d.label);
+      const counts = (recent7 || []).map(d => Number(d.count || 0));
+      const total = counts.reduce((a, b) => a + (b || 0), 0);
 
-      const labels = chartData.map(d => d.label);
-      const received = chartData.map(d => d.received);
-      const processed = chartData.map(d => d.processed);
-
+      if (!labels.length || total === 0) {
+        if (empty) empty.style.display = 'block';
+        el.style.display = 'none';
+        return;
+      }
 
       new Chart(el, {
         type: 'bar',
         data: {
           labels,
-          datasets: [
-            { label: '접수', data: received, borderRadius: 6, backgroundColor: 'rgba(59,130,246,0.6)' },
-            { label: '처리', data: processed, borderRadius: 6, backgroundColor: 'rgba(22,163,74,0.6)' }
-          ]
+          datasets: [{
+            label: '접수',
+            data: counts,
+            borderRadius: 6,
+            backgroundColor: 'rgba(96,165,250,0.65)'  // 파스텔 블루
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#374151' } }, tooltip: { enabled: true } },
+          plugins: {
+            legend: { labels: { color: '#374151', font: { size: 13 } } },
+            tooltip: { enabled: true }
+          },
           scales: {
             x: { ticks: { color: '#475569' }, grid: { color: '#e5e7eb' } },
-            y: { ticks: { color: '#475569' }, grid: { color: '#e5e7eb' }, beginAtZero: true }
+            y: { ticks: { color: '#475569' }, grid: { color: '#e5e7eb' }, beginAtZero: true, precision: 0 }
           }
         }
       });
     })();
   </script>
+
 </body>
 
 </html>

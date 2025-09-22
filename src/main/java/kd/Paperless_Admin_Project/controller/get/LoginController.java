@@ -20,7 +20,7 @@ public class LoginController {
     System.out.println(username);
     System.out.println(password);
 
-    return "/dashboard/dashboard";
+    return "redirect:/admin/dashboard";
   }
 
 }
