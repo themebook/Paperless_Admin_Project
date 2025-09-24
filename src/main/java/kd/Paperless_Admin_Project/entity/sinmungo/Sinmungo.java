@@ -40,8 +40,8 @@ public class Sinmungo {
   @Column(name = "NOTICE_EMAIL", length = 200)
   private String noticeEmail;
 
-  @Column(name = "NOTICE_SMS", length = 1)
-  private char noticeSms;
+  @Column(name = "NOTICE_SMS", columnDefinition = "CHAR(1)")
+  private Character noticeSms;
 
   @Column(name = "POSTCODE", length = 10)
   private String postcode;

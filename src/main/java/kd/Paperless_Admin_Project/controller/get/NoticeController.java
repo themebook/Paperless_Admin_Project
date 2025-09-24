@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import jakarta.validation.Valid;
 
@@ -34,9 +35,9 @@ public class NoticeController {
     Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
     String keyword = (q == null || q.isBlank()) ? null : q;
 
-    Page<Notice> result = noticeRepository.searchAdminNotices(keyword, pageable);
+    Page<NoticeListDto> result = noticeRepository.searchAdminNoticesWithName(keyword, pageable);
 
-    model.addAttribute("items", result.map(NoticeListDto::fromEntity).getContent());
+    model.addAttribute("items", result.getContent());
     model.addAttribute("currentPage", page);
     model.addAttribute("pageSize", size);
     model.addAttribute("totalPages", result.getTotalPages());
@@ -51,17 +52,15 @@ public class NoticeController {
   public String adminNoticeDetail(@PathVariable Long id, Model model) {
     noticeRepository.increaseViewCount(id);
 
-    Notice n = noticeRepository.findAdminById(id)
+    NoticeDetailDto dto = noticeRepository.findAdminByIdWithName(id)
         .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다. id=" + id));
-
-    model.addAttribute("dto", NoticeDetailDto.fromEntity(n));
+    model.addAttribute("dto", dto);
 
     Pageable one = PageRequest.of(0, 1);
-    List<Notice> prev = noticeRepository.findPrevAdmin(id, one);
-    List<Notice> next = noticeRepository.findNextAdmin(id, one);
-
-    model.addAttribute("prev", prev.isEmpty() ? null : NoticeListDto.fromEntity(prev.get(0)));
-    model.addAttribute("next", next.isEmpty() ? null : NoticeListDto.fromEntity(next.get(0)));
+    List<NoticeListDto> prev = noticeRepository.findPrevAdminWithName(id, one);
+    List<NoticeListDto> next = noticeRepository.findNextAdminWithName(id, one);
+    model.addAttribute("prev", prev.isEmpty() ? null : prev.get(0));
+    model.addAttribute("next", next.isEmpty() ? null : next.get(0));
 
     return "/notice/notice_detail";
   }
@@ -69,34 +68,37 @@ public class NoticeController {
   @GetMapping("/admin/notice_write")
   public String adminNoticeWrite(Model model) {
     if (!model.containsAttribute("form")) {
-      model.addAttribute("form", new NoticeWriteDto());
+      NoticeWriteDto form = new NoticeWriteDto();
+      form.setIsPinned("N");
+      form.setTargetAudience("ADMIN");
+      model.addAttribute("form", form);
     }
     return "/notice/notice_write";
   }
 
   @PostMapping("/admin/notice_write")
   public String adminNoticeWriteSubmit(
+      @AuthenticationPrincipal(expression = "admin.adminId") Long adminId,
       @Valid @ModelAttribute("form") NoticeWriteDto form,
       BindingResult binding,
       RedirectAttributes ra) {
+
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
       return "redirect:/admin/notice_write";
     }
 
-    // TODO: 실제 로그인 사용자 ID를 주입하세요.
-    Long adminId = 1L;
-
     noticeRepository.save(form.toEntity(adminId));
+    ra.addFlashAttribute("msg", "등록되었습니다.");
     return "redirect:/admin/notice";
   }
 
+  @Transactional(readOnly = true)
   @GetMapping("/admin/notice_edit/{id}")
   public String adminNoticeEdit(@PathVariable Long id, Model model) {
     Notice n = noticeRepository.findAdminById(id)
         .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다. id=" + id));
-
     if (!model.containsAttribute("form")) {
       model.addAttribute("form", NoticeUpdateDto.fromEntity(n));
     }
@@ -106,9 +108,9 @@ public class NoticeController {
   @PostMapping("/admin/notice_edit/{id}")
   @Transactional
   public String adminNoticeEditSubmit(@PathVariable Long id,
-                                      @Valid @ModelAttribute("form") NoticeUpdateDto form,
-                                      BindingResult binding,
-                                      RedirectAttributes ra) {
+      @Valid @ModelAttribute("form") NoticeUpdateDto form,
+      BindingResult binding,
+      RedirectAttributes ra) {
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
@@ -125,4 +127,3 @@ public class NoticeController {
     return "redirect:/admin/notice_detail/" + id;
   }
 }
-

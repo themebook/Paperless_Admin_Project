@@ -51,7 +51,7 @@
                 <a th:href="@{|/admin/notice_detail/${it.noticeId}|}" th:text="${it.title}">공지사항 제목</a>
               </td>
               <td th:text="${it.createdAt != null ? #temporals.format(it.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
-              <td th:text="${it.adminId}">관리자</td>
+              <td th:text="${it.adminName}">관리자</td>
               <td th:text="${it.viewCount != null ? it.viewCount : 0}">0</td>
               <td th:text="${it.attachmentCount != null ? it.attachmentCount : 0}">0</td>
             </tr>

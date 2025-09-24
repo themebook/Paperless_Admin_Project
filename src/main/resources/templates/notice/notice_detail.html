@@ -31,8 +31,8 @@
             th:text="${dto?.createdAt != null ? #temporals.format(dto.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</span>
           <span>
             작성자:
-            <b class="admin-name" th:attr="data-admin-id=${dto?.adminId}"
-              th:text="${dto?.adminId != null ? 'ID ' + dto.adminId : '-'}">-</b>
+            <b
+              th:text="${dto?.adminName != null ? dto.adminName : (dto?.adminId != null ? 'ID ' + dto.adminId : '-')}">-</b>
           </span>
           <span>조회: <b th:text="${dto?.viewCount != null ? dto.viewCount : 0}">0</b></span>
         </div>
@@ -77,15 +77,6 @@
       document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
       const current = document.querySelector('.nav a[href="/admin/notice"]');
       if (current) current.classList.add('active');
-    })();
-
-    (function () {
-      const MAP = { 1: "관리자A", 2: "관리자B", 3: "관리자C" };
-      const el = document.querySelector('.admin-name');
-      if (!el) return;
-      const id = el.getAttribute('data-admin-id');
-      if (id && id !== 'null') el.textContent = MAP[id] ?? ("ID " + id);
-      else el.textContent = '-';
     })();
   </script>
 </body>

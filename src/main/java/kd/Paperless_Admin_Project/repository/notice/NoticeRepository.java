@@ -1,5 +1,7 @@
 package kd.Paperless_Admin_Project.repository.notice;
 
+import kd.Paperless_Admin_Project.dto.notice.NoticeDetailDto;
+import kd.Paperless_Admin_Project.dto.notice.NoticeListDto;
 import kd.Paperless_Admin_Project.entity.notice.Notice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,48 +13,71 @@ import java.util.Optional;
 
 public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
-  // 공지사항 목록
   @Query("""
-        SELECT n
+        SELECT new kd.Paperless_Admin_Project.dto.notice.NoticeListDto(
+          n.noticeId, n.title, n.createdAt, n.adminId, a.adminName,
+          n.category, n.isPinned, n.viewCount, n.targetAudience, 0
+        )
         FROM Notice n
+        LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
         WHERE n.targetAudience = 'ADMIN'
           AND (
                 :q IS NULL
-             OR LOWER(n.title) LIKE CONCAT('%', LOWER(cast(:q as string)), '%')
-             OR function(
-                  'INSTR',
-                  LOWER(function('DBMS_LOB.SUBSTR', n.content, 4000, 1)),
-                  LOWER(cast(:q as string))
-                ) > 0
+             OR  LOWER(n.title) LIKE CONCAT('%', LOWER(cast(:q as string)), '%')
+             OR  function(
+                    'INSTR',
+                    LOWER(function('DBMS_LOB.SUBSTR', n.content, 4000, 1)),
+                    LOWER(cast(:q as string))
+                 ) > 0
           )
         ORDER BY n.isPinned DESC, n.createdAt DESC
       """)
-  Page<Notice> searchAdminNotices(@Param("q") String q, Pageable pageable);
+  Page<NoticeListDto> searchAdminNoticesWithName(@Param("q") String q, Pageable pageable);
 
-  // 하나찾기
+  @Query("""
+        SELECT new kd.Paperless_Admin_Project.dto.notice.NoticeDetailDto(
+          n.noticeId, n.title, n.content,
+          n.adminId, a.adminName,
+          n.category, n.isPinned,
+          n.targetAudience,
+          n.createdAt, n.viewCount, n.status
+        )
+        FROM Notice n
+        LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
+        WHERE n.noticeId = :id AND n.targetAudience = 'ADMIN'
+      """)
+  Optional<NoticeDetailDto> findAdminByIdWithName(@Param("id") Long id);
+
+  @Query("""
+        SELECT new kd.Paperless_Admin_Project.dto.notice.NoticeListDto(
+          n.noticeId, n.title, n.createdAt, n.adminId, a.adminName,
+          n.category, n.isPinned, n.viewCount, n.targetAudience, 0
+        )
+        FROM Notice n
+        LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
+        WHERE n.targetAudience = 'ADMIN' AND n.noticeId < :id
+        ORDER BY n.noticeId DESC
+      """)
+  List<NoticeListDto> findPrevAdminWithName(@Param("id") Long id, Pageable pageable);
+
+  @Query("""
+        SELECT new kd.Paperless_Admin_Project.dto.notice.NoticeListDto(
+          n.noticeId, n.title, n.createdAt, n.adminId, a.adminName,
+          n.category, n.isPinned, n.viewCount, n.targetAudience, 0
+        )
+        FROM Notice n
+        LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
+        WHERE n.targetAudience = 'ADMIN' AND n.noticeId > :id
+        ORDER BY n.noticeId ASC
+      """)
+  List<NoticeListDto> findNextAdminWithName(@Param("id") Long id, Pageable pageable);
+
   @Query("""
         SELECT n FROM Notice n
         WHERE n.noticeId = :id AND n.targetAudience = 'ADMIN'
       """)
   Optional<Notice> findAdminById(@Param("id") Long id);
 
-  // 이전글
-  @Query("""
-        SELECT n FROM Notice n
-        WHERE n.targetAudience = 'ADMIN' AND n.noticeId < :id
-        ORDER BY n.noticeId DESC
-      """)
-  List<Notice> findPrevAdmin(@Param("id") Long id, Pageable pageable);
-
-  // 다음글
-  @Query("""
-        SELECT n FROM Notice n
-        WHERE n.targetAudience = 'ADMIN' AND n.noticeId > :id
-        ORDER BY n.noticeId ASC
-      """)
-  List<Notice> findNextAdmin(@Param("id") Long id, Pageable pageable);
-
-  // 조회수
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query("""
         UPDATE Notice n

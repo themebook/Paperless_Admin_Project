@@ -1,6 +1,5 @@
 package kd.Paperless_Admin_Project.dto.notice;
 
-import kd.Paperless_Admin_Project.entity.notice.Notice;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -8,35 +7,48 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class NoticeListDto {
 
   private Long noticeId;
   private String title;
   private LocalDateTime createdAt;
   private Long adminId;
+  private String adminName;
   private String category;
   private String isPinned;
   private Long viewCount;
   private String targetAudience;
+  private Integer attachmentCount;
 
-  @Builder.Default
-  private Integer attachmentCount = 0;
+  public NoticeListDto(Long noticeId,
+      String title,
+      LocalDateTime createdAt,
+      Long adminId,
+      String adminName,
+      String category,
+      Character isPinned,
+      Long viewCount,
+      String targetAudience,
+      Integer attachmentCount) {
+    this.noticeId = noticeId;
+    this.title = title;
+    this.createdAt = createdAt;
+    this.adminId = adminId;
+    this.adminName = adminName;
+    this.category = category;
+    this.isPinned = normalizeYN(isPinned);
+    this.viewCount = viewCount;
+    this.targetAudience = targetAudience;
+    this.attachmentCount = (attachmentCount != null ? attachmentCount : 0);
+  }
 
-  public static NoticeListDto fromEntity(Notice e) {
-    if (e == null) {
+  private static String normalizeYN(Character yn) {
+    if (yn == null)
       return null;
-    }
-    return NoticeListDto.builder()
-        .noticeId(e.getNoticeId())
-        .title(e.getTitle())
-        .createdAt(e.getCreatedAt())
-        .adminId(e.getAdminId())
-        .category(e.getCategory())
-        .isPinned(String.valueOf(e.getIsPinned()))
-        .viewCount(e.getViewCount())
-        .targetAudience(e.getTargetAudience())
-        .build();
+    if (yn == 'Y' || yn == 'y')
+      return "Y";
+    if (yn == 'N' || yn == 'n')
+      return "N";
+    return String.valueOf(yn);
   }
 }

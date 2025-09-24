@@ -16,12 +16,17 @@
     <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
     <main class="main" role="main">
-      <h1 class="page-title">내게 배정된 민원</h1>
+      <h1 class="page-title">
+        내게 배정된 민원
+        <small th:if="${adminName != null}" class="mono" style="font-size:12px; color:#64748b;">담당: <span
+            th:text="${adminName}">-</span></small>
+      </h1>
 
       <div class="section tabs">
         <a th:href="@{/admin/sinmungo_list}">전체 민원</a>
         <a class="active" th:href="@{|/admin/sinmungo_list/${adminId}|}">내게 배정된 민원</a>
       </div>
+
 
       <div class="stats-bar" th:if="${stats != null}">
         <span class="stat-pill"><span class="pill-dot pill-all"></span>전체
@@ -46,7 +51,7 @@
             <option th:selected="${status=='보류'}">보류</option>
           </select>
 
-          <input class="input" type="text" name="q" placeholder="제목/접수번호" th:value="${q}" />
+          <input class="input" type="text" name="q" placeholder="제목/접수번호 검색" th:value="${q}" />
           <button class="btn" type="submit">검색</button>
           <a class="btn" th:href="@{|/admin/sinmungo_list/${adminId}|}">초기화</a>
 

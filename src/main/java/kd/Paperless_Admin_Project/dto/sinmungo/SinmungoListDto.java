@@ -9,16 +9,27 @@ import kd.Paperless_Admin_Project.entity.sinmungo.Sinmungo;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class SinmungoListDto {
-
   private Long smgId;
   private String title;
   private String status;
   private LocalDateTime createdAt;
   private LocalDateTime answerDate;
   private Long adminId;
+  private String adminName; // 추가
+
+  public SinmungoListDto(Long smgId, String title, String status,
+      LocalDateTime createdAt, LocalDateTime answerDate,
+      Long adminId, String adminName) {
+    this.smgId = smgId;
+    this.title = title;
+    this.status = status;
+    this.createdAt = createdAt;
+    this.answerDate = answerDate;
+    this.adminId = adminId;
+    this.adminName = adminName;
+  }
 
   public static SinmungoListDto fromEntity(Sinmungo e) {
     if (e == null)

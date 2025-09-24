@@ -26,6 +26,7 @@
 
         <form th:action="@{|/admin/notice_edit/${form.noticeId}|}" method="post" class="form-section"
           th:object="${form}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
           <div>
             <label for="title">제목</label>

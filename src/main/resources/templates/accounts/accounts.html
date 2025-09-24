@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>아이디 관리(팀장 전용) · 신문고 백오피스</title>
+
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/manager/css/manager.css}" />
+  <link rel="stylesheet" th:href="@{/accounts/css/accounts.css}" />
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">아이디 관리 (팀장 전용)</h1>
+
+      <div class="card info-card">
+        <div>사원 계정 <b>생성</b>, <b>직급 변경</b>, <b>상태 변경</b>, <b>비밀번호 초기화</b>를 할 수 있습니다.</div>
+      </div>
+
+      <div class="card section">
+        <form class="toolbar" th:action="@{/admin/accounts}" method="get">
+          <input class="input" type="text" name="q" placeholder="ID/이름/이메일 검색" th:value="${q}" />
+          <select class="select" name="roleCode" th:value="${roleCode}">
+            <option value="">직급(전체)</option>
+            <option value="1" th:selected="${roleCode==1}">사원(1)</option>
+            <option value="2" th:selected="${roleCode==2}">팀장(2)</option>
+            <option value="3" th:selected="${roleCode==3}">부장(3)</option>
+            <option value="10" th:selected="${roleCode==10}">최고관리자(10)</option>
+          </select>
+          <select class="select" name="status" th:value="${status}">
+            <option value="">상태(전체)</option>
+            <option value="ACTIVE" th:selected="${status=='ACTIVE'}">ACTIVE</option>
+            <option value="DISABLED" th:selected="${status=='DISABLED'}">DISABLED</option>
+          </select>
+          <button class="btn" type="submit">검색</button>
+          <a class="btn" th:href="@{/admin/accounts}">초기화</a>
+
+          <span class="spacer"></span>
+          <button class="btn primary" type="button" id="openCreate">신규 계정 생성</button>
+        </form>
+      </div>
+
+      <div class="card table-wrap section">
+        <div class="table-caption" th:text="${'총 ' + (totalCount!=null? totalCount : 0) + '건'}">총 0건</div>
+        <table>
+          <thead>
+            <tr>
+              <th class="col-id">ID</th>
+              <th>로그인ID</th>
+              <th>이름</th>
+              <th>직급</th>
+              <th>상태</th>
+              <th>이메일</th>
+              <th class="col-actions">작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="a : ${items}">
+              <td class="mono" th:text="${a.adminId}">1</td>
+              <td class="mono" th:text="${a.loginId}">login01</td>
+              <td th:text="${a.adminName}">홍길동</td>
+              <td>
+                <select class="select js-role" th:data-id="${a.adminId}">
+                  <option value="1" th:selected="${a.roleCode==1}">사원(1)</option>
+                  <option value="2" th:selected="${a.roleCode==2}">팀장(2)</option>
+                  <option value="3" th:selected="${a.roleCode==3}">부장(3)</option>
+                  <option value="10" th:if="${a.roleCode==10}" selected>최고관리자(10)</option>
+                </select>
+              </td>
+              <td>
+                <select class="select js-status" th:data-id="${a.adminId}">
+                  <option value="ACTIVE" th:selected="${a.status=='ACTIVE'}">ACTIVE</option>
+                  <option value="DISABLED" th:selected="${a.status=='DISABLED'}">DISABLED</option>
+                </select>
+              </td>
+              <td th:text="${a.email}"></td>
+              <td>
+                <button class="btn sm js-save" type="button" th:data-id="${a.adminId}"
+                  th:if="${meRoleCode > a.roleCode and meId != a.adminId}">저장</button>
+                <button class="btn sm" type="button" th:data-id="${a.adminId}" onclick="resetPw(this)"
+                  th:if="${meRoleCode > a.roleCode and meId != a.adminId}">비번초기화</button>
+                <button class="btn sm danger" type="button" th:data-id="${a.adminId}" onclick="deleteAccount(this)"
+                  th:if="${#authorization.expression('hasRole(''ADMIN'')') and meRoleCode > a.roleCode and meId != a.adminId}">
+                  삭제
+                </button>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(items)}">
+              <td colspan="7" style="text-align:center; color:#999;">검색 결과가 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="actions section">
+        <a class="btn" th:href="@{/admin/dashboard}">대시보드로</a>
+      </div>
+    </main>
+  </div>
+
+  <div class="pl-modal-overlay" id="createModal" aria-hidden="true" style="display:none;">
+    <div class="pl-modal" role="dialog" aria-modal="true" aria-labelledby="createModalTitle">
+      <div class="pl-modal__header">
+        <h3 id="createModalTitle">신규 계정 생성</h3>
+        <button type="button" class="pl-icon-btn" data-close-modal>×</button>
+      </div>
+
+      <form id="createAccountForm" class="pl-modal__body">
+        <div class="pl-field">
+          <label for="c_loginId">로그인ID (필수)</label>
+          <input id="c_loginId" name="loginId" class="pl-input" required>
+        </div>
+
+        <div class="pl-grid-2">
+          <div class="pl-field">
+            <label for="c_adminName">이름</label>
+            <input id="c_adminName" name="adminName" class="pl-input">
+          </div>
+          <div class="pl-field">
+            <label for="c_phone">전화번호</label>
+            <input id="c_phone" name="phoneNum" class="pl-input">
+          </div>
+        </div>
+
+        <div class="pl-field">
+          <label for="c_email">이메일</label>
+          <input id="c_email" name="email" type="email" class="pl-input">
+        </div>
+
+        <div class="pl-grid-2">
+          <div class="pl-field">
+            <label for="c_role">직급</label>
+            <select id="c_role" name="roleCode" class="pl-select">
+              <option value="1">사원(1)</option>
+              <option value="2">팀장(2)</option>
+              <option value="3">부장(3)</option>
+              <option value="10" th:if="${!adminExists}">최고관리자(10)</option>
+            </select>
+          </div>
+          <div class="pl-field">
+            <label for="c_status">상태</label>
+            <select id="c_status" name="status" class="pl-select">
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="DISABLED">DISABLED</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pl-field">
+          <label for="c_tempPw">임시 비밀번호</label>
+          <input id="c_tempPw" name="tempPassword" class="pl-input" placeholder="미입력 시 자동발급">
+        </div>
+
+        <div class="pl-modal__footer">
+          <button type="button" class="pl-btn" data-close-modal>취소</button>
+          <button type="submit" class="pl-btn pl-btn--primary">생성</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const current = document.querySelector('.nav a[href="/admin/accounts"]');
+      if (current) current.classList.add('active');
+    })();
+
+    (function () {
+      const token = document.querySelector('meta[name="_csrf"]')?.content;
+      const header = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+      if (token) {
+        $(document).ajaxSend((_, xhr) => xhr.setRequestHeader(header, token));
+      }
+    })();
+
+    $(document).on('click', '.js-save', function () {
+      const id = $(this).data('id');
+      const roleCode = Number($(`.js-role[data-id="${id}"]`).val());
+      const status = $(`.js-status[data-id="${id}"]`).val();
+      $.ajax({
+        url: `/admin/accounts/${id}/update`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ roleCode, status }),
+        success: (res) => { alert(res.message || '저장되었습니다.'); location.reload(); },
+        error: (xhr) => { alert(xhr.responseJSON?.message || '오류가 발생했습니다.'); }
+      });
+    });
+
+    function resetPw(btn) {
+      const id = btn.getAttribute('data-id');
+      if (!confirm('임시 비밀번호를 발급하시겠습니까?')) return;
+      $.post(`/admin/accounts/${id}/reset-password`)
+        .done(res => {
+          alert((res.message || '완료') + (res.tempPassword ? `\n임시비번: ${res.tempPassword}` : ''));
+          location.reload();
+        })
+        .fail(xhr => alert(xhr.responseJSON?.message || '오류가 발생했습니다.'));
+    }
+
+    function deleteAccount(btn) {
+      const id = btn.getAttribute('data-id');
+      if (!confirm('정말 이 계정을 삭제하시겠습니까?')) return;
+
+      $.post(`/admin/accounts/${id}/delete`)
+        .done(res => {
+          alert(res.message || '삭제되었습니다.');
+          location.reload();
+        })
+        .fail(xhr => alert(xhr.responseJSON?.message || '삭제 중 오류가 발생했습니다.'));
+    }
+
+    const modal = document.getElementById('createModal');
+    const form = document.getElementById('createAccountForm');
+
+    function openModal() {
+      modal.style.display = 'grid';
+      modal.setAttribute('aria-hidden', 'false');
+      setTimeout(() => document.getElementById('c_loginId')?.focus(), 0);
+    }
+    function closeModal() {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      form?.reset();
+    }
+
+    $('#openCreate').on('click', openModal);
+    $(document).on('click', '[data-close-modal]', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    $('#createAccountForm').on('submit', function (e) {
+      e.preventDefault();
+      const payload = {
+        loginId: $('#c_loginId').val().trim(),
+        adminName: $('#c_adminName').val().trim(),
+        email: $('#c_email').val().trim(),
+        phoneNum: $('#c_phone').val().trim(),
+        roleCode: Number($('#c_role').val()),
+        status: $('#c_status').val(),
+        tempPassword: $('#c_tempPw').val().trim()
+      };
+      if (!payload.loginId) { alert('로그인ID를 입력하세요.'); return; }
+      $.ajax({
+        url: '/admin/accounts',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
+        success: (res) => {
+          let msg = res.message || '생성되었습니다.';
+          if (res.tempPassword) msg += `\n임시비번: ${res.tempPassword}`;
+          alert(msg);
+          location.reload();
+        },
+        error: (xhr) => alert(xhr.responseJSON?.message || '오류가 발생했습니다.')
+      });
+    });
+  </script>
+</body>
+
+</html>

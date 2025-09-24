@@ -2,43 +2,61 @@ package kd.Paperless_Admin_Project.controller.get;
 
 import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoDetailDto;
 import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto;
+import kd.Paperless_Admin_Project.entity.admin.Admin;
 import kd.Paperless_Admin_Project.entity.sinmungo.Sinmungo;
 import kd.Paperless_Admin_Project.repository.sinmungo.SinmungoRepository;
+import kd.Paperless_Admin_Project.security.AdminUserDetails;
+import kd.Paperless_Admin_Project.repository.admin.AdminRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.transaction.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class SinmungoController {
 
   private final SinmungoRepository sinmungoRepository;
+  private final AdminRepository adminRepository;
 
   @GetMapping("/admin/sinmungo_list")
-  public String adminSinmungoList(@SessionAttribute(name = "adminId", required = false) Long adminId,
+  public String adminSinmungoList(
+      Authentication auth,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(required = false) String q,
       @RequestParam(required = false) String status,
       Model model) {
 
-    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "smgId"));
+    Long me = null;
+    if (auth != null && auth.isAuthenticated()) {
+      Object p = auth.getPrincipal();
+      if (p instanceof AdminUserDetails aud && aud.getAdmin() != null)
+        me = aud.getAdmin().getAdminId();
+      else if (p instanceof Admin a)
+        me = a.getAdminId();
+      else if (p instanceof UserDetails ud)
+        me = adminRepository.findByLoginId(ud.getUsername()).map(Admin::getAdminId).orElse(null);
+      else if (p instanceof String s && !"anonymousUser".equals(s))
+        me = adminRepository.findByLoginId(s).map(Admin::getAdminId).orElse(null);
+    }
+    model.addAttribute("adminId", me);
 
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "smgId"));
     String kw = (q == null || q.isBlank()) ? null : q.trim();
     String st = (status == null || status.isBlank()) ? null : status.trim();
 
-    Page<Sinmungo> result = sinmungoRepository.adminSearch(kw, st, pageable);
-    Page<SinmungoListDto> dtoPage = result.map(SinmungoListDto::fromEntity);
+    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminSearchWithName(kw, st, pageable);
 
     model.addAttribute("items", dtoPage.getContent());
     model.addAttribute("totalCount", dtoPage.getTotalElements());
@@ -48,63 +66,46 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    model.addAttribute("adminId", adminId);
     return "/sinmungo/sinmungo_list";
   }
 
   @GetMapping("/admin/sinmungo_list/{adminId}")
-  public String adminSinmungoAssigned(@PathVariable Long adminId,
+  public String adminSinmungoAssigned(
+      @PathVariable Long adminId,
+      Authentication auth,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(required = false) String q,
       @RequestParam(required = false) String status,
-      @RequestParam(required = false) String due,
       Model model) {
 
-    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "smgId"));
+    model.addAttribute("adminId", adminId);
 
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "smgId"));
     String kw = (q == null || q.isBlank()) ? null : q.trim();
     String st = (status == null || status.isBlank()) ? null : status.trim();
-    String dueFilter = (due == null || due.isBlank()) ? null : due.trim();
 
-    LocalDateTime now = LocalDateTime.now();
-    LocalDateTime soonUntil = now.plusHours(48);
-
-    Page<Sinmungo> result = sinmungoRepository.adminAssignedSearch(
-        adminId, kw, st, dueFilter, now, soonUntil, pageable);
-    Page<SinmungoListDto> dtoPage = result.map(SinmungoListDto::fromEntity);
+    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminAssignedSearchWithName(adminId, kw, st, pageable);
 
     model.addAttribute("items", dtoPage.getContent());
     model.addAttribute("totalCount", dtoPage.getTotalElements());
     model.addAttribute("currentPage", page);
     model.addAttribute("pageSize", size);
     model.addAttribute("totalPages", dtoPage.getTotalPages());
-
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
-    model.addAttribute("due", dueFilter == null ? "" : dueFilter);
-    model.addAttribute("adminId", adminId);
 
     return "/sinmungo/sinmungo_my";
   }
 
   @GetMapping("/admin/sinmungo_detail/{id}")
   public String detail(@PathVariable Long id, Model model) {
-    Sinmungo entity = sinmungoRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("민원 없음: " + id));
-
-    SinmungoDetailDto dto = SinmungoDetailDto.fromEntity(entity);
+    SinmungoDetailDto dto = sinmungoRepository.findDetailWithNames(id);
+    if (dto == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "민원을 찾을 수 없습니다.");
+    }
     model.addAttribute("dto", dto);
-
-    // TODO: DB 연결하기
-    List<AssigneeOption> adminOptions = List.of(
-        new AssigneeOption(23L, "김담당"),
-        new AssigneeOption(24L, "박담당"),
-        new AssigneeOption(25L, "이담당"),
-        new AssigneeOption(26L, "최담당"));
-    model.addAttribute("adminOptions", adminOptions);
-
-    return "/sinmungo/sinmungo_detail";
+    return "sinmungo/sinmungo_detail";
   }
 
   @PostMapping("/admin/sinmungo_detail/{id}/assign")
@@ -133,7 +134,7 @@ public class SinmungoController {
 
     switch (action) {
       case "approve" -> {
-        e.setStatus("완료");
+        e.setStatus("승인");
         e.setRejectReason(null);
         ra.addFlashAttribute("msg", "승인(완료) 처리되었습니다.");
       }
@@ -145,15 +146,13 @@ public class SinmungoController {
         e.setRejectReason(rejectReason.trim());
         ra.addFlashAttribute("msg", "반려 처리되었습니다.");
       }
-      case "delete" -> {
-        e.setStatus("삭제");
+      case "hold" -> {
+        e.setStatus("보류");
         e.setRejectReason(null);
-        ra.addFlashAttribute("msg", "삭제 처리되었습니다.");
+        ra.addFlashAttribute("msg", "보류 처리되었습니다.");
       }
       case "receive" -> {
         e.setStatus("접수");
-        e.setRejectReason(null);
-        ra.addFlashAttribute("msg", "접수 상태로 변경되었습니다.");
       }
       default -> throw new IllegalArgumentException("알 수 없는 action: " + action);
     }

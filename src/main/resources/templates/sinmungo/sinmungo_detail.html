@@ -8,20 +8,6 @@
   <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
   <link rel="stylesheet" th:href="@{/sinmungo/css/sinmungo.css}" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-  <script>
-    window.USER_NAME_MAP = {
-      1: "홍길동", 2: "김민수", 3: "박지영"
-    };
-    window.ADMIN_NAME_MAP = {
-      1: "관리자A", 2: "관리자B", 3: "관리자C"
-    };
-    function renderName(id, map) {
-      if (id == null) return "-";
-      const key = String(id);
-      return (map[key] || map[id] || null) ?? ("ID " + id);
-    }
-  </script>
 </head>
 
 <body>
@@ -42,7 +28,8 @@
         <dl class="meta-card" style="display:grid;grid-template-columns:110px 1fr;row-gap:6px;column-gap:8px;margin:0;">
           <dt style="color:#64748b;">신청인</dt>
           <dd>
-            <span id="writerNameText">-</span>
+            <span
+              th:text="${dto.writerName != null ? dto.writerName : (dto.writerId != null ? 'ID ' + dto.writerId : '-')}">-</span>
             <span th:if="${dto.telNum != null}" th:text="${' (' + dto.telNum + ')'}"></span>
           </dd>
 
@@ -63,7 +50,10 @@
           </dd>
 
           <dt style="color:#64748b;">담당자</dt>
-          <dd><span id="adminNameText">-</span></dd>
+          <dd>
+            <span
+              th:text="${dto.adminName != null ? dto.adminName : (dto.adminId != null ? 'ID ' + dto.adminId : '-')}">-</span>
+          </dd>
 
           <dt style="color:#64748b;">이메일</dt>
           <dd th:text="${#strings.defaultString(dto?.noticeEmail, '-')}">-</dd>
@@ -88,30 +78,13 @@
 
       <div class="card section">
         <h2 class="page-title" style="font-size:16px;">시민 답변(발송용)</h2>
-        <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10"
-          placeholder="시민에게 발송할 답변을 작성하세요."></textarea>
+        <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10" placeholder="시민에게 발송할 답변을 작성하세요."
+          th:text="${dto.adminAnswer}"></textarea>
         <div th:if="${dto.answerDate != null}" style="margin-top:8px; color:#64748b; font-size:13px;">
           마지막 등록일:
           <span th:text="${#temporals.format(dto.answerDate, 'yyyy-MM-dd HH:mm')}"></span>
         </div>
       </div>
-
-      <!-- 담당자 변경 (다른 페이지에서 처리하므로 주석) -->
-      <!--
-      <div class="card section">
-        <h2 class="page-title" style="font-size:16px;">담당자 변경</h2>
-        <form th:action="@{|/admin/sinmungo_detail/${dto.smgId}/assign|}" method="post"
-          style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <select class="select" name="adminId" required>
-            <option value="" th:selected="${dto.adminId == null}">담당자 선택</option>
-            <option th:each="opt : ${adminOptions}" th:value="${opt.id}" th:text="${opt.name}"
-              th:selected="${dto.adminId != null and dto.adminId == opt.id}">
-            </option>
-          </select>
-          <button class="btn primary" type="submit">변경</button>
-        </form>
-      </div>
-      -->
 
       <div class="actions section actions-bar">
         <div class="left">
@@ -132,7 +105,7 @@
     </main>
   </div>
 
-  <div id="rejectModal" class="modal-backdrop" aria-hidden="true">
+  <div id="rejectModal" class="modal-backdrop" aria-hidden="true" style="display:none;">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rejectTitle">
       <header id="rejectTitle">반려 사유 입력</header>
       <div class="body">
@@ -148,17 +121,9 @@
 
   <script>
     (function () {
-      var links = document.querySelectorAll('.nav a');
-      links.forEach(a => a.classList.remove('active'));
-      var current = document.querySelector('.nav a[href="/admin/sinmungo_list"]');
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const current = document.querySelector('.nav a[href="/admin/sinmungo_list"]');
       if (current) current.classList.add('active');
-    })();
-
-    (function () {
-      const writerId = /*[[${dto.writerId}]]*/ null;
-      const adminId = /*[[${dto.adminId}]]*/ null;
-      document.getElementById('writerNameText').textContent = renderName(writerId, window.USER_NAME_MAP);
-      document.getElementById('adminNameText').textContent = renderName(adminId, window.ADMIN_NAME_MAP);
     })();
 
     function submitStatus(action) {

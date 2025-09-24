@@ -5,6 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoDetailDto;
+import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto;
 import kd.Paperless_Admin_Project.entity.sinmungo.Sinmungo;
 
 import java.time.LocalDateTime;
@@ -12,7 +14,6 @@ import java.util.List;
 
 public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
 
-  // 전체 민원 검색
   @Query("""
         SELECT s FROM Sinmungo s
         WHERE (:status IS NULL OR s.status = :status)
@@ -27,7 +28,6 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
       @Param("status") String status,
       Pageable pageable);
 
-  // 내 배정 민원 검색
   @Query("""
         SELECT s FROM Sinmungo s
         WHERE s.adminId = :adminId
@@ -37,19 +37,11 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
              OR  LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
              OR  CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%')
           )
-          AND (
-               :due IS NULL
-            OR (:due = 'soon' AND s.answerDate IS NOT NULL AND s.answerDate BETWEEN :now AND :soonUntil)
-            OR (:due = 'over' AND s.answerDate IS NOT NULL AND s.answerDate < :now)
-          )
         ORDER BY s.smgId DESC
       """)
   Page<Sinmungo> adminAssignedSearch(@Param("adminId") Long adminId,
       @Param("q") String q,
       @Param("status") String status,
-      @Param("due") String due,
-      @Param("now") LocalDateTime now,
-      @Param("soonUntil") LocalDateTime soonUntil,
       Pageable pageable);
 
   @Query("""
@@ -68,7 +60,14 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
       """)
   List<Object[]> countByStatus();
 
-  // 관리쪽... 미배정 신문고 목록
+  @Query("""
+        SELECT s.status, COUNT(s)
+        FROM Sinmungo s
+        WHERE s.adminId = :adminId
+        GROUP BY s.status
+      """)
+  List<Object[]> countByStatusForAdmin(@Param("adminId") Long adminId);
+
   @Query("""
         SELECT s FROM Sinmungo s
         WHERE s.adminId IS NULL
@@ -81,11 +80,9 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
       """)
   Page<Sinmungo> searchUnassigned(@Param("q") String q, Pageable pageable);
 
-  // 관리쪽... 미배정 신문고 count
   @Query("SELECT COUNT(s) FROM Sinmungo s WHERE s.adminId IS NULL")
   long countUnassigned();
 
-  // 관리쪽 미배정 신문고 단일 배정
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query("""
       UPDATE Sinmungo s
@@ -95,7 +92,6 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
        """)
   int assignOneIfUnassigned(@Param("smgId") Long smgId, @Param("adminId") Long adminId);
 
-  // 관리쪽 미배정 신문고 일괄 배정
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query("""
       UPDATE Sinmungo s
@@ -104,6 +100,69 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
       AND s.adminId IS NULL
       """)
   int assignBulkIfUnassigned(@Param("ids") List<Long> ids, @Param("adminId") Long adminId);
+
+  @Query(value = """
+      SELECT new kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto(
+               s.smgId, s.title, s.status, s.createdAt, s.answerDate, s.adminId, a.adminName)
+      FROM Sinmungo s
+      LEFT JOIN Admin a ON a.adminId = s.adminId
+      WHERE (:q IS NULL
+              OR LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%'))
+        AND (:status IS NULL OR s.status = :status)
+      ORDER BY s.smgId DESC
+      """, countQuery = """
+      SELECT COUNT(s)
+      FROM Sinmungo s
+      WHERE (:q IS NULL
+              OR LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%'))
+        AND (:status IS NULL OR s.status = :status)
+      """)
+  Page<SinmungoListDto> adminSearchWithName(@Param("q") String q,
+      @Param("status") String status,
+      Pageable pageable);
+
+  @Query(value = """
+      SELECT new kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto(
+               s.smgId, s.title, s.status, s.createdAt, s.answerDate, s.adminId, a.adminName)
+      FROM Sinmungo s
+      LEFT JOIN Admin a ON a.adminId = s.adminId
+      WHERE s.adminId = :adminId
+        AND (:q IS NULL
+              OR LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%'))
+        AND (:status IS NULL OR s.status = :status)
+      ORDER BY s.smgId DESC
+      """, countQuery = """
+      SELECT COUNT(s)
+      FROM Sinmungo s
+      WHERE s.adminId = :adminId
+        AND (:q IS NULL
+              OR LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%'))
+        AND (:status IS NULL OR s.status = :status)
+      """)
+  Page<SinmungoListDto> adminAssignedSearchWithName(@Param("adminId") Long adminId,
+      @Param("q") String q,
+      @Param("status") String status,
+      Pageable pageable);
+
+  @Query("""
+        SELECT new kd.Paperless_Admin_Project.dto.sinmungo.SinmungoDetailDto(
+          s.smgId, s.title, s.content,
+          s.writerId, u.userName, s.telNum, s.noticeEmail, s.noticeSms,
+          s.postcode, s.addr1, s.addr2,
+          s.adminId, a.adminName, s.adminAnswer, s.answerDate,
+          s.status, s.rejectReason, s.viewCount,
+          s.createdAt
+        )
+        FROM Sinmungo s
+        LEFT JOIN kd.Paperless_Admin_Project.entity.user.User  u ON u.userId  = s.writerId
+        LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = s.adminId
+        WHERE s.smgId = :id
+      """)
+  SinmungoDetailDto findDetailWithNames(@Param("id") Long id);
 
   long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 

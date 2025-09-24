@@ -17,9 +17,13 @@
 
     <main class="main" role="main">
       <h1 class="page-title">공지사항 작성</h1>
+      <div class="meta-line" style="margin:8px 0 16px;color:#64748b;">
+        작성자: <b th:text="${adminName != null ? adminName : '-'}">-</b>
+      </div>
 
       <div class="card section">
         <form th:action="@{/admin/notice_write}" method="post" class="form-section" th:object="${form}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
           <div>
             <label for="title">제목</label>
             <input class="input" id="title" th:field="*{title}" type="text" placeholder="제목" required>
