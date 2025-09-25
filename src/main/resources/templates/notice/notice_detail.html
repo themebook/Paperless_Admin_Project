@@ -44,11 +44,18 @@
         </div>
       </div>
 
-      <div class="card section" th:if="${files != null and !#lists.isEmpty(files)}">
+      <div class="card section" th:if="${files != null}">
         <h2 class="page-title" style="font-size:15px; margin-bottom:8px;">첨부파일</h2>
-        <ul class="attach-list">
+
+        <div th:if="${#lists.isEmpty(files)}" style="color:#64748b;">첨부된 파일이 없습니다.</div>
+
+        <ul class="attach-list" th:if="${!#lists.isEmpty(files)}">
           <li th:each="f : ${files}">
-            <a th:href="${f.url}" th:text="${f.filename}">첨부파일명</a>
+            <a th:href="@{|/files/${f.fileId}/download|}" th:text="${f.fileName}">첨부파일명</a>
+            <span style="color:#94a3b8;"
+              th:text="${' (' + (f.mimeType != null ? f.mimeType : 'application/octet-stream') + ', ' + f.fileSize + ' bytes)'}">
+              (mime, size)
+            </span>
           </li>
         </ul>
       </div>

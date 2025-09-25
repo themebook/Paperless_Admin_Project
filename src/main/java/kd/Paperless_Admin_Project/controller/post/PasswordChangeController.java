@@ -1,4 +1,3 @@
-// src/main/java/kd/Paperless_Admin_Project/controller/post/PasswordChangeController.java
 package kd.Paperless_Admin_Project.controller.post;
 
 import kd.Paperless_Admin_Project.entity.admin.Admin;

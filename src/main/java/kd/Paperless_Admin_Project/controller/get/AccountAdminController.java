@@ -1,4 +1,3 @@
-// src/main/java/kd/Paperless_Admin_Project/controller/get/AccountAdminController.java
 package kd.Paperless_Admin_Project.controller.get;
 
 import kd.Paperless_Admin_Project.entity.admin.Admin;

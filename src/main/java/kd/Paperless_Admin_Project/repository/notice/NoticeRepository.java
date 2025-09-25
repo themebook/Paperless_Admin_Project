@@ -20,7 +20,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
         )
         FROM Notice n
         LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
-        WHERE n.targetAudience = 'ADMIN'
+        WHERE n.targetAudience = 'ADMIN' OR n.targetAudience = 'ALL'  
           AND (
                 :q IS NULL
              OR  LOWER(n.title) LIKE CONCAT('%', LOWER(cast(:q as string)), '%')

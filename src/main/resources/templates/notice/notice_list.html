@@ -38,7 +38,6 @@
               <th class="col-date">작성일</th>
               <th class="col-author">작성자</th>
               <th class="col-views">조회</th>
-              <th class="col-attach">첨부</th>
             </tr>
           </thead>
           <tbody>
@@ -53,7 +52,6 @@
               <td th:text="${it.createdAt != null ? #temporals.format(it.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
               <td th:text="${it.adminName}">관리자</td>
               <td th:text="${it.viewCount != null ? it.viewCount : 0}">0</td>
-              <td th:text="${it.attachmentCount != null ? it.attachmentCount : 0}">0</td>
             </tr>
 
             <tr th:if="${#lists.isEmpty(items)}">

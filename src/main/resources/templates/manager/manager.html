@@ -82,6 +82,21 @@
         </div>
       </div>
 
+      <div class="pager">
+        <a class="btn sm" th:classappend="${currentPage == 1} ? ' disabled'"
+          th:href="@{/admin/manager(page=${currentPage > 1 ? currentPage - 1 : 1}, size=${pageSize}, q=${q})}">
+          이전
+        </a>
+
+        <span style="font-size:13px; color:#64748b;"
+          th:text="${currentPage + ' / ' + (totalPages == 0 ? 1 : totalPages)}">1 / 1</span>
+
+        <a class="btn sm" th:classappend="${currentPage == totalPages or totalPages == 0} ? ' disabled'"
+          th:href="@{/admin/manager(page=${currentPage < totalPages ? currentPage + 1 : totalPages}, size=${pageSize}, q=${q})}">
+          다음
+        </a>
+      </div>
+
       <div class="actions section">
         <a class="btn" th:href="@{/admin/dashboard}">대시보드로</a>
       </div>
@@ -92,7 +107,7 @@
     (function () {
       var links = document.querySelectorAll('.nav a');
       links.forEach(a => a.classList.remove('active'));
-      var current = document.querySelector('.nav a[href="/admin_manager"]');
+      var current = document.querySelector('.nav a[href="/admin/manager"]');
       if (current) current.classList.add('active');
     })();
 

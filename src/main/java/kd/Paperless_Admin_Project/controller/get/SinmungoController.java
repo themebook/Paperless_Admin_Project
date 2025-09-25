@@ -3,10 +3,12 @@ package kd.Paperless_Admin_Project.controller.get;
 import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoDetailDto;
 import kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto;
 import kd.Paperless_Admin_Project.entity.admin.Admin;
+import kd.Paperless_Admin_Project.entity.file.Attachment;
 import kd.Paperless_Admin_Project.entity.sinmungo.Sinmungo;
+import kd.Paperless_Admin_Project.repository.admin.AdminRepository;
+import kd.Paperless_Admin_Project.repository.file.AttachmentRepository;
 import kd.Paperless_Admin_Project.repository.sinmungo.SinmungoRepository;
 import kd.Paperless_Admin_Project.security.AdminUserDetails;
-import kd.Paperless_Admin_Project.repository.admin.AdminRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,6 +31,9 @@ public class SinmungoController {
 
   private final SinmungoRepository sinmungoRepository;
   private final AdminRepository adminRepository;
+  private final AttachmentRepository attachmentRepository;
+
+  private static final String ATTACH_TARGET = "SINMUNGO";
 
   @GetMapping("/admin/sinmungo_list")
   public String adminSinmungoList(
@@ -105,6 +111,11 @@ public class SinmungoController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "민원을 찾을 수 없습니다.");
     }
     model.addAttribute("dto", dto);
+
+    List<Attachment> files = attachmentRepository
+        .findByTargetTypeAndTargetIdOrderByFileIdAsc(ATTACH_TARGET, id);
+    model.addAttribute("files", files);
+
     return "sinmungo/sinmungo_detail";
   }
 

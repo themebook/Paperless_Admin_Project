@@ -102,6 +102,21 @@
         </table>
       </div>
 
+      <div class="pager">
+        <a class="btn sm" th:classappend="${currentPage == 1} ? ' disabled'"
+          th:href="@{/admin/accounts(page=${currentPage > 1 ? currentPage - 1 : 1}, size=${pageSize}, q=${q}, roleCode=${roleCode}, status=${status})}">
+          이전
+        </a>
+
+        <span style="font-size:13px; color:#64748b;"
+          th:text="${currentPage + ' / ' + (totalPages == 0 ? 1 : totalPages)}">1 / 1</span>
+
+        <a class="btn sm" th:classappend="${currentPage == totalPages or totalPages == 0} ? ' disabled'"
+          th:href="@{/admin/accounts(page=${currentPage < totalPages ? currentPage + 1 : totalPages}, size=${pageSize}, q=${q}, roleCode=${roleCode}, status=${status})}">
+          다음
+        </a>
+      </div>
+
       <div class="actions section">
         <a class="btn" th:href="@{/admin/dashboard}">대시보드로</a>
       </div>

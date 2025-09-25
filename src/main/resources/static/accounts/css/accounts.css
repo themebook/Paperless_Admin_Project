@@ -183,3 +183,16 @@
 .btn.danger:hover {
   filter: brightness(0.9);
 }
+
+.pager {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.btn.disabled {
+  pointer-events: none;
+  opacity: .5;
+}

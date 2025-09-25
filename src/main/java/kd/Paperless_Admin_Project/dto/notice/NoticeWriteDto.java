@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,6 +27,8 @@ public class NoticeWriteDto {
   @Pattern(regexp = "^(ADMIN|USER)?$", message = "대상은 ADMIN 또는 USER 입니다.")
   private String targetAudience;
 
+  private List<MultipartFile> files;
+
   public Notice toEntity(Long adminId) {
     return Notice.builder()
         .title(normalizeTitle(title))
@@ -31,6 +36,7 @@ public class NoticeWriteDto {
         .adminId(adminId)
         .isPinned(toYNChar(isPinned))
         .targetAudience(normalizeAudience(targetAudience))
+        .status("POSTED")
         .build();
   }
 

@@ -76,6 +76,20 @@
         <div class="prose" th:utext="${#strings.escapeXml(dto.content)?.replaceAll('\n','<br/>')}"></div>
       </div>
 
+      <div class="card section" th:if="${files != null}">
+        <h2 class="page-title" style="font-size:16px;">첨부파일</h2>
+        <div th:if="${#lists.isEmpty(files)}" style="color:#64748b;">첨부된 파일이 없습니다.</div>
+        <ul class="attach-list" th:if="${!#lists.isEmpty(files)}" style="margin:0;padding-left:16px;">
+          <li th:each="f : ${files}">
+            <a th:href="@{|/files/${f.fileId}/download|}" th:text="${f.fileName}">첨부</a>
+            <span style="color:#94a3b8;"
+              th:text="${' (' + (f.mimeType != null ? f.mimeType : 'application/octet-stream') + ', ' + f.fileSize + ' bytes)'}">
+              (mime, size)
+            </span>
+          </li>
+        </ul>
+      </div>
+
       <div class="card section">
         <h2 class="page-title" style="font-size:16px;">시민 답변(발송용)</h2>
         <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10" placeholder="시민에게 발송할 답변을 작성하세요."

@@ -21,9 +21,14 @@
         작성자: <b th:text="${adminName != null ? adminName : '-'}">-</b>
       </div>
 
+      <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
+
       <div class="card section">
-        <form th:action="@{/admin/notice_write}" method="post" class="form-section" th:object="${form}">
+        <form th:action="@{/admin/notice_write}" method="post" class="form-section" th:object="${form}"
+          enctype="multipart/form-data">
+
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
           <div>
             <label for="title">제목</label>
             <input class="input" id="title" th:field="*{title}" type="text" placeholder="제목" required>
@@ -43,6 +48,7 @@
                 <option value="N">아니오</option>
                 <option value="Y">예</option>
               </select>
+              <div class="field-error" th:if="${#fields.hasErrors('isPinned')}" th:errors="*{isPinned}"></div>
             </div>
             <div>
               <label for="targetAudience">대상</label>
@@ -50,7 +56,15 @@
                 <option value="ADMIN">직원용</option>
                 <option value="USER">사용자용</option>
               </select>
+              <div class="field-error" th:if="${#fields.hasErrors('targetAudience')}" th:errors="*{targetAudience}">
+              </div>
             </div>
+          </div>
+
+          <div>
+            <label for="files">첨부파일</label>
+            <input id="files" type="file" name="files" multiple>
+            <div class="helper">여러 파일 선택 가능 • 요청당 최대 100MB (서버 설정 기준)</div>
           </div>
 
           <div class="form-actions">
@@ -58,9 +72,7 @@
             <button class="btn primary" type="submit">등록</button>
           </div>
         </form>
-
       </div>
-
     </main>
   </div>
 </body>

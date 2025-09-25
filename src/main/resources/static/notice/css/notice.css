@@ -229,3 +229,33 @@ tbody tr:hover {
   font-size: 12px;
   margin-top: 4px;
 }
+
+.helper {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #e2e8f0
+}
+
+.file-item:last-child {
+  border-bottom: none
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 12px
+}

@@ -28,12 +28,15 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
             .requestMatchers("/", "/admin/login", "/error",
+                "/favicon.ico",
                 "/admin/css/**", "/login/css/**",
                 "/css/**", "/js/**", "/images/**")
             .permitAll()
             .requestMatchers("/admin/manager/**", "/admin/accounts/**")
             .hasAnyRole("MANAGER", "DIRECTOR", "ADMIN")
             .requestMatchers("/admin/**")
+            .hasAnyRole("EMPLOYEE", "MANAGER", "DIRECTOR", "ADMIN")
+            .requestMatchers("/files/**")
             .hasAnyRole("EMPLOYEE", "MANAGER", "DIRECTOR", "ADMIN")
             .anyRequest().authenticated())
         .userDetailsService(userDetailsService)
