@@ -167,4 +167,6 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
   long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
   long countByAdminId(Long adminId);
+
+  long countByAdminIdAndStatus(Long adminId, String status);
 }

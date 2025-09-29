@@ -31,7 +31,9 @@ public class DashboardController {
     LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
     long todayCount = sinmungoRepository.countByCreatedAtBetween(startOfDay, endOfDay);
 
-    long assignedCount = (adminId != null) ? sinmungoRepository.countByAdminId(adminId) : 0L;
+    long assignedCount = (adminId != null)
+        ? sinmungoRepository.countByAdminIdAndStatus(adminId, "접수")
+        : 0L;
 
     model.addAttribute("kpiTotal", totalCount);
     model.addAttribute("kpiTodayReceived", todayCount);

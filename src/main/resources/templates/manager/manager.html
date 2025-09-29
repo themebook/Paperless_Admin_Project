@@ -5,9 +5,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>미배정 업무 배정(팀장 전용) · 신문고 백오피스</title>
+
+  <!-- CSRF 메타 (Thymeleaf로 주입) -->
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
   <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
   <link rel="stylesheet" th:href="@{/manager/css/manager.css}" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- jQuery 글로벌 CSRF 헤더 주입 -->
+  <script>
+    (function () {
+      var token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+      var header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+      if (token && header && window.$) {
+        $.ajaxSetup({
+          beforeSend: function (xhr) { xhr.setRequestHeader(header, token); }
+        });
+      }
+    })();
+  </script>
 </head>
 
 <body>
@@ -19,8 +37,10 @@
       <h1 class="page-title">미배정 업무 배정 (팀장 전용)</h1>
 
       <div class="card info-card">
-        <div>현재 <b th:text="${'미배정 ' + (unassignedCount != null ? unassignedCount : 0) + '건'}">미배정 0건</b>이 있습니다. 선택하여
-          담당자에게 배정하세요.</div>
+        <div>
+          현재 <b th:text="${'미배정 ' + (unassignedCount != null ? unassignedCount : 0) + '건'}">미배정 0건</b>이 있습니다. 선택하여 담당자에게
+          배정하세요.
+        </div>
       </div>
 
       <div class="card section">
@@ -40,7 +60,6 @@
             <button class="btn primary" id="bulkAssignBtn" type="button" disabled>선택 업무 일괄 배정</button>
           </div>
         </form>
-
       </div>
 
       <div class="card table-wrap section">
@@ -166,7 +185,6 @@
           }
         });
       });
-
     });
   </script>
 </body>
