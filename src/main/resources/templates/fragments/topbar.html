@@ -1,7 +1,9 @@
 <header class="topbar" role="banner" th:fragment="topbar">
   <div class="brand">
-    <div class="brand-badge" aria-hidden="true"></div>
-    <strong>신문고 백오피스</strong>
+    <div class="brand-badge" aria-hidden="true">
+      <img th:src="@{/images/logo.png}" alt="팽구청 로고" />
+    </div>
+    <strong>팽구청</strong>
   </div>
 
   <div class="topbar-actions">
@@ -180,7 +182,9 @@
       gap: 0
     }
 
-    .pl-modal-overlay[hidden] { display: none !important; }
+    .pl-modal-overlay[hidden] {
+      display: none !important;
+    }
   </style>
 
   <script>

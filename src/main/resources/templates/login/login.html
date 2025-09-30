@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>로그인 · 신문고 백오피스</title>
+  <title>로그인 · 팽구청</title>
   <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
   <link rel="stylesheet" th:href="@{/login/css/login.css}" />
 </head>
@@ -13,8 +13,10 @@
   <div class="auth-wrap">
     <div class="card auth-card">
       <div class="auth-brand">
-        <div class="brand-badge" aria-hidden="true"></div>
-        <strong>신문고 백오피스</strong>
+        <div class="brand-badge" aria-hidden="true">
+          <img th:src="@{/images/logo.png}" alt="팽구청 로고" />
+        </div>
+        <strong>팽구청</strong>
       </div>
 
       <div class="alert error" th:if="${param.error}">아이디 또는 비밀번호가 올바르지 않습니다.</div>
