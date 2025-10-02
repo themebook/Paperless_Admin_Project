@@ -11,6 +11,7 @@ import lombok.*;
 public class SinmungoManagerDto {
   private Long smgId;
   private String title;
+  private Long attachCount;
 
   public static SinmungoManagerDto fromEntity(Sinmungo e) {
     if (e == null)
@@ -18,6 +19,7 @@ public class SinmungoManagerDto {
     return SinmungoManagerDto.builder()
         .smgId(e.getSmgId())
         .title(e.getTitle())
+        .attachCount(0L) // TODO: 첨부 연동
         .build();
   }
 }
