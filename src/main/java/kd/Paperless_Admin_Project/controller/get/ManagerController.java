@@ -35,15 +35,7 @@ public class ManagerController {
 
     long unassignedCount = sinmungoRepository.countUnassigned();
 
-    List<Admin> adminOptions;
-    try {
-      adminOptions = adminRepository.findAll();
-      if (adminOptions == null || adminOptions.isEmpty()) {
-        adminOptions = adminRepository.findAll();
-      }
-    } catch (Exception e) {
-      adminOptions = adminRepository.findAll();
-    }
+    List<Admin> adminOptions = adminRepository.findAll();
 
     model.addAttribute("items", items.getContent());
     model.addAttribute("currentPage", page);

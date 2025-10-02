@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+@PreAuthorize("hasAnyRole('MANAGER','DIRECTOR','ADMIN')")
 @Controller
 @RequestMapping("/admin/members")
 @RequiredArgsConstructor
@@ -78,7 +80,7 @@ public class MembersController {
     model.addAttribute("kpiActive", kpiActive);
     model.addAttribute("kpiDisabled", kpiDisabled);
 
-    return "/members/members";
+    return "members/members";
   }
 
   @PostMapping(consumes = "application/json", produces = "application/json")
