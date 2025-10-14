@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>미배정 업무 배정(팀장 전용) · 팽구청</title>
 
-  <!-- CSRF 메타 (Thymeleaf로 주입) -->
+  <!-- CSRF -->
   <meta name="_csrf" th:content="${_csrf.token}" />
   <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
@@ -14,15 +14,12 @@
   <link rel="stylesheet" th:href="@{/manager/css/manager.css}" />
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-  <!-- jQuery 글로벌 CSRF 헤더 주입 -->
   <script>
     (function () {
       var token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
       var header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
       if (token && header && window.$) {
-        $.ajaxSetup({
-          beforeSend: function (xhr) { xhr.setRequestHeader(header, token); }
-        });
+        $.ajaxSetup({ beforeSend: function (xhr) { xhr.setRequestHeader(header, token); } });
       }
     })();
   </script>
@@ -38,8 +35,8 @@
 
       <div class="card info-card">
         <div>
-          현재 <b th:text="${'미배정 ' + (unassignedCount != null ? unassignedCount : 0) + '건'}">미배정 0건</b>이 있습니다. 선택하여 담당자에게
-          배정하세요.
+          현재 <b th:text="${'미배정 ' + (unassignedCount != null ? unassignedCount : 0) + '건'}">미배정 0건</b>이 있습니다.
+          선택하여 담당자에게 배정하세요.
         </div>
       </div>
 
@@ -64,31 +61,61 @@
 
       <div class="card table-wrap section">
         <table>
+          <colgroup>
+            <col style="width:36px" />
+            <col style="width:100px" />
+            <col />
+            <col style="width:260px" />
+            <col style="width:44px" />
+          </colgroup>
           <thead>
             <tr>
               <th class="col-check"><input type="checkbox" id="ckAll" /></th>
               <th class="col-id">접수번호</th>
               <th>제목</th>
-              <th class="col-attach">첨부</th>
               <th class="col-assign">배정</th>
+              <th class="col-toggle" aria-label="내용 보기 토글"></th>
             </tr>
           </thead>
+
           <tbody>
-            <tr th:each="it : ${items}">
-              <td><input type="checkbox" class="ck" th:value="${it.smgId}" /></td>
-              <td class="mono" th:text="${'#' + it.smgId}">#0000</td>
-              <td>
-                <a th:href="@{|/admin/sinmungo_detail/${it.smgId}|}" th:text="${it.title}">제목</a>
-              </td>
-              <td th:text="${it.attachCount}">0</td>
-              <td class="assign-cell">
-                <select class="select assign-select">
-                  <option value="">직원 선택</option>
-                  <option th:each="a : ${adminOptions}" th:value="${a.adminId}" th:text="${a.adminName}"></option>
-                </select>
-                <button class="btn sm" type="button" th:attr="data-assign=${it.smgId}">배정</button>
-              </td>
-            </tr>
+            <th:block th:each="it : ${items}">
+              <tr class="item-row">
+                <td class="cell-toggle">
+                  <input type="checkbox" class="ck" th:value="${it.smgId}" />
+                </td>
+                <td class="mono cell-toggle" th:text="${'#' + it.smgId}">#0000</td>
+                <td class="cell-toggle" th:text="${it.title}">제목</td>
+
+                <td class="assign-cell">
+                  <button class="btn btn-secondary" th:onclick="|location.href='/admin/sinmungo_detail/${it.smgId}'|">
+                    상세이동
+                  </button>
+
+                  <select class="assign-select">
+                    <option value="">직원 선택</option>
+                    <option th:each="a : ${adminOptions}" th:value="${a.adminId}" th:text="${a.adminName}"></option>
+                  </select>
+
+                  <button class="btn btn-assign" type="button" th:attr="data-assign=${it.smgId}">
+                    배정
+                  </button>
+                </td>
+
+                <td class="col-toggle-td">
+                  <button type="button" class="caret" title="내용 보기" aria-label="내용 보기"></button>
+                </td>
+              </tr>
+
+              <tr class="expand-row" style="display:none;">
+                <td colspan="5" class="expand-cell">
+                  <div class="expand-box">
+                    <div class="expand-header">내용</div>
+                    <div class="expand-content" th:text="${it.content}">내용 미리보기</div>
+                  </div>
+                </td>
+              </tr>
+            </th:block>
 
             <tr th:if="${#lists.isEmpty(items)}">
               <td colspan="5" style="text-align:center; color:#999;">미배정 업무가 없습니다.</td>
@@ -106,10 +133,8 @@
           th:href="@{/admin/manager(page=${currentPage > 1 ? currentPage - 1 : 1}, size=${pageSize}, q=${q})}">
           이전
         </a>
-
         <span style="font-size:13px; color:#64748b;"
           th:text="${currentPage + ' / ' + (totalPages == 0 ? 1 : totalPages)}">1 / 1</span>
-
         <a class="btn sm" th:classappend="${currentPage == totalPages or totalPages == 0} ? ' disabled'"
           th:href="@{/admin/manager(page=${currentPage < totalPages ? currentPage + 1 : totalPages}, size=${pageSize}, q=${q})}">
           다음
@@ -134,8 +159,7 @@
       function updateCount() {
         const c = $('.ck:checked').length;
         $('#selCount').text(c);
-        const hasSel = c > 0;
-        $('#bulkAssignBtn').prop('disabled', !hasSel || !$('#assigneeAll').val());
+        $('#bulkAssignBtn').prop('disabled', !(c > 0 && $('#assigneeAll').val()));
       }
 
       $('#ckAll').on('change', function () { $('.ck').prop('checked', this.checked); updateCount(); });
@@ -145,7 +169,7 @@
       // 단건 배정
       $(document).on('click', '[data-assign]', function () {
         const smgId = Number($(this).data('assign'));
-        const adminId = $(this).closest('tr').find('.assign-select').val();
+        const adminId = $(this).closest('tr.item-row').find('.assign-select').val();
         if (!adminId) { alert('담당자를 선택하세요.'); return; }
 
         $.ajax({
@@ -153,13 +177,8 @@
           method: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({ smgId, adminId }),
-          success: function (res) {
-            alert(res.message || '처리되었습니다.');
-            location.reload();
-          },
-          error: function (xhr) {
-            alert(xhr.responseJSON?.message || '처리 중 오류가 발생했습니다.');
-          }
+          success: function (res) { alert(res.message || '처리되었습니다.'); location.reload(); },
+          error: function (xhr) { alert(xhr.responseJSON?.message || '처리 중 오류가 발생했습니다.'); }
         });
       });
 
@@ -167,8 +186,7 @@
       $('#bulkAssignBtn').on('click', function () {
         const adminId = $('#assigneeAll').val();
         if (!adminId) { alert('담당자를 선택하세요.'); return; }
-        const ids = [];
-        $('.ck:checked').each(function () { ids.push(Number($(this).val())); });
+        const ids = $('.ck:checked').map(function () { return Number(this.value); }).get();
         if (ids.length === 0) { alert('선택된 업무가 없습니다.'); return; }
 
         $.ajax({
@@ -176,14 +194,27 @@
           method: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({ ids, adminId }),
-          success: function (res) {
-            alert(res.message || '처리되었습니다.');
-            location.reload();
-          },
-          error: function (xhr) {
-            alert(xhr.responseJSON?.message || '처리 중 오류가 발생했습니다.');
-          }
+          success: function (res) { alert(res.message || '처리되었습니다.'); location.reload(); },
+          error: function (xhr) { alert(xhr.responseJSON?.message || '처리 중 오류가 발생했습니다.'); }
         });
+      });
+
+      function toggleExpand($itemRow) {
+        const $expand = $itemRow.next('.expand-row');
+        const $caret = $itemRow.find('.caret');
+        const isOpen = $expand.is(':visible');
+        if (isOpen) { $expand.hide(); $caret.removeClass('open'); }
+        else { $expand.show(); $caret.addClass('open'); }
+      }
+
+      $(document).on('click', 'tr.item-row td', function (e) {
+        if ($(e.target).closest('input, select, button, a, label').length) return;
+        toggleExpand($(this).closest('tr.item-row'));
+      });
+
+      $(document).on('click', '.caret', function (e) {
+        e.stopPropagation();
+        toggleExpand($(this).closest('tr.item-row'));
       });
     });
   </script>
