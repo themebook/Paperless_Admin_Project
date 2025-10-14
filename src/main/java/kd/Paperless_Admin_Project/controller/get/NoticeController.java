@@ -2,6 +2,7 @@ package kd.Paperless_Admin_Project.controller.get;
 
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import kd.Paperless_Admin_Project.dto.notice.NoticeDetailDto;
 import kd.Paperless_Admin_Project.dto.notice.NoticeListDto;
 import kd.Paperless_Admin_Project.dto.notice.NoticeUpdateDto;
@@ -191,5 +192,33 @@ public class NoticeController {
     LocalDate d = LocalDate.now();
     return "%04d/%02d/%02d/%s__%s".formatted(
         d.getYear(), d.getMonthValue(), d.getDayOfMonth(), UUID.randomUUID(), filename);
+  }
+
+  @PostMapping("/admin/notice_delete/{id}")
+  @Transactional
+  public String adminNoticeDelete(@PathVariable Long id, RedirectAttributes ra) {
+    List<Attachment> files = attachmentRepository
+        .findByTargetTypeAndTargetIdOrderByFileIdAsc("NOTICE", id);
+
+    for (Attachment f : files) {
+      try {
+        minioClient.removeObject(
+            RemoveObjectArgs.builder()
+                .bucket(bucket)
+                .object(f.getFileUri())
+                .build());
+      } catch (Exception e) {
+        System.err.println("MinIO 삭제 실패: " + f.getFileUri() + " - " + e.getMessage());
+      }
+    }
+
+    if (!files.isEmpty()) {
+      attachmentRepository.deleteAllInBatch(files);
+    }
+
+    noticeRepository.deleteById(id);
+
+    ra.addFlashAttribute("msg", "삭제되었습니다.");
+    return "redirect:/admin/notice";
   }
 }

@@ -219,6 +219,11 @@ tbody tr:hover {
   color: #fff;
 }
 
+.btn.danger {
+  background: #dc2626;
+  color: #fff;
+}
+
 .btn.primary:hover {
   background: #3b82f6;
   border-color: #3b82f6;

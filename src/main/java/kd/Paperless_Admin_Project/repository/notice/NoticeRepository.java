@@ -20,7 +20,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
         )
         FROM Notice n
         LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
-        WHERE n.targetAudience = 'ADMIN' OR n.targetAudience = 'ALL'  
+        WHERE n.targetAudience = 'ADMIN' OR n.targetAudience = 'ALL' OR n.targetAudience = 'USER' 
           AND (
                 :q IS NULL
              OR  LOWER(n.title) LIKE CONCAT('%', LOWER(cast(:q as string)), '%')
@@ -44,7 +44,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
         )
         FROM Notice n
         LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
-        WHERE n.noticeId = :id AND n.targetAudience = 'ADMIN'
+        WHERE n.noticeId = :id
       """)
   Optional<NoticeDetailDto> findAdminByIdWithName(@Param("id") Long id);
 
@@ -55,7 +55,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
         )
         FROM Notice n
         LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
-        WHERE n.targetAudience = 'ADMIN' AND n.noticeId < :id
+        WHERE n.noticeId < :id
         ORDER BY n.noticeId DESC
       """)
   List<NoticeListDto> findPrevAdminWithName(@Param("id") Long id, Pageable pageable);
@@ -67,14 +67,14 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
         )
         FROM Notice n
         LEFT JOIN kd.Paperless_Admin_Project.entity.admin.Admin a ON a.adminId = n.adminId
-        WHERE n.targetAudience = 'ADMIN' AND n.noticeId > :id
+        WHERE n.noticeId > :id
         ORDER BY n.noticeId ASC
       """)
   List<NoticeListDto> findNextAdminWithName(@Param("id") Long id, Pageable pageable);
 
   @Query("""
         SELECT n FROM Notice n
-        WHERE n.noticeId = :id AND n.targetAudience = 'ADMIN'
+        WHERE n.noticeId = :id
       """)
   Optional<Notice> findAdminById(@Param("id") Long id);
 
@@ -82,7 +82,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
   @Query("""
         UPDATE Notice n
         SET n.viewCount = COALESCE(n.viewCount, 0) + 1
-        WHERE n.noticeId = :id AND n.targetAudience = 'ADMIN'
+        WHERE n.noticeId = :id
       """)
   int increaseViewCount(@Param("id") Long id);
 }
