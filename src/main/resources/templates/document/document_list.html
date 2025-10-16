@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>문서 신청 목록</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/sinmungo/css/sinmungo.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">문서 신청 목록</h1>
+
+      <div class="card section">
+        <form class="toolbar" action="#" method="get">
+          <select name="status" class="select" aria-label="상태">
+            <option value="">전체 상태</option>
+            <option value="접수">접수</option>
+            <option value="승인">승인</option>
+            <option value="반려">반려</option>
+            <option value="보류">보류</option>
+          </select>
+
+          <select name="docType" class="select" aria-label="문서 종류">
+            <option value="">전체 서류</option>
+            <option value="주민등록초본">주민등록초본</option>
+            <option value="등본">등본</option>
+            <option value="여권(재)발급">여권(재)발급</option>
+          </select>
+
+          <button class="btn" type="submit">검색</button>
+          <button class="btn" type="reset">초기화</button>
+        </form>
+      </div>
+
+      <div class="card table-wrap section fixed" style="--row-count: 10;">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-id">접수번호</th>
+              <th class="col-title">발급서류</th>
+              <th class="col-status">상태</th>
+              <th class="col-owner">문서신청인</th>
+              <th class="col-date">접수날짜</th>
+              <th class="col-date">답변날짜</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-href="/admin/documents/240011">
+              <td class="mono">#<span>240011</span></td>
+              <td>주민등록초본</td>
+              <td class="col-status"><span class="state"><span class="dot recv"></span><span>접수</span></span></td>
+              <td class="col-owner">홍길동</td>
+              <td>2025-10-14</td>
+              <td>-</td>
+            </tr>
+            <tr data-href="/admin/documents/240010">
+              <td class="mono">#<span>240010</span></td>
+              <td>등본</td>
+              <td class="col-status"><span class="state"><span class="dot appr"></span><span>승인</span></span></td>
+              <td class="col-owner">김선수</td>
+              <td>2025-10-13</td>
+              <td>2025-10-14</td>
+            </tr>
+            <tr data-href="/admin/documents/240009">
+              <td class="mono">#<span>240009</span></td>
+              <td>여권(재)발급</td>
+              <td class="col-status"><span class="state"><span class="dot rej"></span><span>반려</span></span></td>
+              <td class="col-owner">이영희</td>
+              <td>2025-10-12</td>
+              <td>2025-10-13</td>
+            </tr>
+            <tr data-href="/admin/documents/240008">
+              <td class="mono">#<span>240008</span></td>
+              <td>등본</td>
+              <td class="col-status"><span class="state"><span class="dot hold"></span><span>보류</span></span></td>
+              <td class="col-owner">박민수</td>
+              <td>2025-10-11</td>
+              <td>-</td>
+            </tr>
+            <tr data-href="/admin/documents/240007">
+              <td class="mono">#<span>240007</span></td>
+              <td>주민등록초본</td>
+              <td class="col-status"><span class="state"><span class="dot appr"></span><span>승인</span></span></td>
+              <td class="col-owner">최수정</td>
+              <td>2025-10-10</td>
+              <td>2025-10-11</td>
+            </tr>
+            <tr data-href="/admin/documents/240006">
+              <td class="mono">#<span>240006</span></td>
+              <td>여권(재)발급</td>
+              <td class="col-status"><span class="state"><span class="dot recv"></span><span>접수</span></span></td>
+              <td class="col-owner">오세훈</td>
+              <td>2025-10-09</td>
+              <td>-</td>
+            </tr>
+            <tr data-href="/admin/documents/240005">
+              <td class="mono">#<span>240005</span></td>
+              <td>등본</td>
+              <td class="col-status"><span class="state"><span class="dot rej"></span><span>반려</span></span></td>
+              <td class="col-owner">양다은</td>
+              <td>2025-10-09</td>
+              <td>2025-10-10</td>
+            </tr>
+            <tr data-href="/admin/documents/240004">
+              <td class="mono">#<span>240004</span></td>
+              <td>주민등록초본</td>
+              <td class="col-status"><span class="state"><span class="dot hold"></span><span>보류</span></span></td>
+              <td class="col-owner">정해인</td>
+              <td>2025-10-08</td>
+              <td>-</td>
+            </tr>
+            <tr data-href="/admin/documents/240003">
+              <td class="mono">#<span>240003</span></td>
+              <td>여권(재)발급</td>
+              <td class="col-status"><span class="state"><span class="dot appr"></span><span>승인</span></span></td>
+              <td class="col-owner">문소리</td>
+              <td>2025-10-07</td>
+              <td>2025-10-08</td>
+            </tr>
+            <tr data-href="/admin/documents/240002">
+              <td class="mono">#<span>240002</span></td>
+              <td>등본</td>
+              <td class="col-status"><span class="state"><span class="dot recv"></span><span>접수</span></span></td>
+              <td class="col-owner">강호동</td>
+              <td>2025-10-06</td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <a class="btn sm" href="#">이전</a>
+        <span style="font-size:13px; color:#64748b;">1 / 1</span>
+        <a class="btn sm" href="#">다음</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const curr = document.querySelector('.nav a[href="/admin/documents"]');
+      if (curr) curr.classList.add('active');
+    })();
+
+    (function () {
+      document.querySelectorAll('tbody tr[data-href]').forEach(tr => {
+        tr.addEventListener('click', (e) => {
+          if (e.target.closest('a, button, input, select')) return;
+          const href = tr.getAttribute('data-href');
+          if (href && href !== '#') location.href = href;
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>
