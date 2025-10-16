@@ -28,7 +28,6 @@ public class AttachmentController {
   @Value("${storage.minio.bucket}")
   private String bucket;
 
-  /** 업로드 (단건) */
   @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Transactional
   public ResponseEntity<Attachment> upload(
@@ -66,7 +65,6 @@ public class AttachmentController {
     return ResponseEntity.ok(saved);
   }
 
-  /** 업로드 (여러 파일) */
   @PostMapping(path = "/upload-multi", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Transactional
   public ResponseEntity<List<Attachment>> uploadMulti(
@@ -108,13 +106,11 @@ public class AttachmentController {
     return ResponseEntity.ok(result);
   }
 
-  /** 대상별 목록 */
   @GetMapping("/list")
   public List<Attachment> list(@RequestParam String targetType, @RequestParam Long targetId) {
     return attachmentRepository.findByTargetTypeAndTargetIdOrderByFileIdAsc(targetType, targetId);
   }
 
-  /** 다운로드 */
   @GetMapping("/{fileId}/download")
   public ResponseEntity<InputStreamResource> download(@PathVariable Long fileId) throws Exception {
     Attachment att = attachmentRepository.findById(fileId)
@@ -126,15 +122,14 @@ public class AttachmentController {
         .build();
     InputStream in = minioClient.getObject(args);
 
-    // 헤더 구성
     HttpHeaders headers = new HttpHeaders();
     headers.setContentDisposition(
         ContentDisposition.attachment()
             .filename(att.getFileName(), StandardCharsets.UTF_8)
             .build());
-    MediaType ct = (att.getMimeType() != null)
-        ? MediaType.parseMediaType(att.getMimeType())
-        : MediaType.APPLICATION_OCTET_STREAM;
+
+    MediaType ct = resolveMediaType(att.getMimeType(), att.getFileName());
+
     headers.setContentType(ct);
 
     return ResponseEntity.ok()
@@ -142,7 +137,32 @@ public class AttachmentController {
         .body(new InputStreamResource(in));
   }
 
-  /** 삭제 */
+  @GetMapping("/{fileId}/view")
+  public ResponseEntity<InputStreamResource> view(@PathVariable Long fileId) throws Exception {
+    Attachment att = attachmentRepository.findById(fileId)
+        .orElseThrow(() -> new IllegalArgumentException("파일이 존재하지 않습니다: " + fileId));
+
+    GetObjectArgs args = GetObjectArgs.builder()
+        .bucket(bucket)
+        .object(att.getFileUri())
+        .build();
+    InputStream in = minioClient.getObject(args);
+
+    MediaType ct = resolveMediaType(att.getMimeType(), att.getFileName());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentDisposition(
+        ContentDisposition.inline()
+            .filename(att.getFileName(), StandardCharsets.UTF_8)
+            .build());
+    headers.setContentType(ct);
+    headers.setCacheControl(CacheControl.noCache().cachePrivate());
+
+    return ResponseEntity.ok()
+        .headers(headers)
+        .body(new InputStreamResource(in));
+  }
+
   @DeleteMapping("/{fileId}")
   @Transactional
   public ResponseEntity<Void> delete(@PathVariable Long fileId) throws Exception {
@@ -158,7 +178,6 @@ public class AttachmentController {
     return ResponseEntity.noContent().build();
   }
 
-  /** 객체 키 규칙: yyyy/MM/dd/uuid__원본파일명 */
   private static String buildObjectKey(String filename) {
     LocalDate d = LocalDate.now();
     return "%04d/%02d/%02d/%s__%s".formatted(
@@ -183,5 +202,25 @@ public class AttachmentController {
     return ResponseEntity.status(HttpStatus.SEE_OTHER)
         .header(HttpHeaders.LOCATION, redirectUrl)
         .build();
+  }
+
+  private static MediaType resolveMediaType(String mime, String fileName) {
+    try {
+      if (mime != null && !mime.isBlank()) {
+        return MediaType.parseMediaType(mime);
+      }
+      String lower = (fileName == null ? "" : fileName.toLowerCase());
+      if (lower.endsWith(".png"))
+        return MediaType.IMAGE_PNG;
+      if (lower.endsWith(".jpg") || lower.endsWith(".jpeg"))
+        return MediaType.IMAGE_JPEG;
+      if (lower.endsWith(".gif"))
+        return MediaType.IMAGE_GIF;
+      if (lower.endsWith(".webp"))
+        return MediaType.parseMediaType("image/webp");
+      return MediaType.APPLICATION_OCTET_STREAM;
+    } catch (Exception e) {
+      return MediaType.APPLICATION_OCTET_STREAM;
+    }
   }
 }

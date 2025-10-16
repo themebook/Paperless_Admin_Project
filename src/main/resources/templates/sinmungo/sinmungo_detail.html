@@ -78,16 +78,35 @@
 
       <div class="card section" th:if="${files != null}">
         <h2 class="page-title" style="font-size:16px;">첨부파일</h2>
+
         <div th:if="${#lists.isEmpty(files)}" style="color:#64748b;">첨부된 파일이 없습니다.</div>
-        <ul class="attach-list" th:if="${!#lists.isEmpty(files)}" style="margin:0;padding-left:16px;">
-          <li th:each="f : ${files}">
-            <a th:href="@{|/files/${f.fileId}/download|}" th:text="${f.fileName}">첨부</a>
-            <span style="color:#94a3b8;"
-              th:text="${' (' + (f.mimeType != null ? f.mimeType : 'application/octet-stream') + ', ' + f.fileSize + ' bytes)'}">
-              (mime, size)
-            </span>
-          </li>
-        </ul>
+
+        <div class="attach-grid" th:if="${!#lists.isEmpty(files)}">
+          <div class="attach-item" th:each="f, iterStat : ${files}">
+            <div class="thumb" th:if="${f.mimeType != null and #strings.startsWith(f.mimeType, 'image/')}" role="button"
+              tabindex="0" th:attr="data-fileid=${f.fileId},data-filename=${f.fileName},data-index=${iterStat.index}"
+              aria-label="이미지 크게 보기">
+              <img th:src="@{|/files/${f.fileId}/view|}" th:alt="${f.fileName}" loading="lazy" />
+              <a class="thumb__dl" th:href="@{|/files/${f.fileId}/download|}"
+                th:attr="aria-label=${'다운로드: ' + f.fileName}" title="다운로드" onclick="event.stopPropagation();">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="16" height="16">
+                  <path
+                    d="M12 3a1 1 0 0 1 1 1v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4.001 4a1 1 0 0 1-1.414 0l-4.001-4a1 1 0 1 1 1.414-1.414L11 13.586V4a1 1 0 0 1 1-1zM5 19a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5z"
+                    fill="currentColor" />
+                </svg>
+              </a>
+            </div>
+
+            <div th:if="${!(f.mimeType != null and #strings.startsWith(f.mimeType, 'image/'))}">
+              <a th:href="@{|/files/${f.fileId}/download|}" th:text="${f.fileName}">첨부</a>
+              <span style="color:#94a3b8;"
+                th:text="${' (' + (f.mimeType != null ? f.mimeType : 'application/octet-stream') + ', ' + f.fileSize + ' bytes)'}">
+              </span>
+            </div>
+
+            <div class="filename one-line" th:title="${f.fileName}" th:text="${f.fileName}"></div>
+          </div>
+        </div>
       </div>
 
       <div class="card section">
@@ -133,60 +152,150 @@
     </div>
   </div>
 
+  <!-- 이미지 라이트박스 -->
+  <div id="imageLightbox" class="lightbox" aria-hidden="true" style="display:none;">
+    <div class="lightbox__backdrop" data-close="true"></div>
+    <div class="lightbox__content" role="dialog" aria-modal="true" aria-label="이미지 미리보기">
+      <button type="button" class="lightbox__close" aria-label="닫기" data-close="true">×</button>
+      <img id="lightboxImg" alt="첨부 이미지" />
+      <div id="lightboxCaption" class="lightbox__caption"></div>
+      <div class="lightbox__nav">
+        <button type="button" id="lightboxPrev" class="btn sm" aria-label="이전">‹</button>
+        <button type="button" id="lightboxNext" class="btn sm" aria-label="다음">›</button>
+        <a id="lightboxDownload" class="btn sm" href="#" download>다운로드</a>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
-      const current = document.querySelector('.nav a[href="/admin/sinmungo_list"]');
-      if (current) current.classList.add('active');
-    })();
+      const active = document.querySelector('.nav a[href="/admin/sinmungo_list"]');
+      if (active) active.classList.add('active');
 
-    function submitStatus(action) {
-      if (action === 'approve') {
-        if (!confirm('승인 처리하시겠습니까?')) return;
-        document.getElementById('statusAction').value = 'approve';
-        document.getElementById('rejectReasonHidden').value = '';
-        const answer = document.getElementById('adminAnswer').value;
-        let hidden = document.getElementById('answerHidden');
-        if (!hidden) {
-          hidden = document.createElement('input');
-          hidden.type = 'hidden';
-          hidden.name = 'adminAnswer';
-          hidden.id = 'answerHidden';
-          document.getElementById('statusForm').appendChild(hidden);
-        }
-        hidden.value = answer;
+      const grid = document.querySelector('.attach-grid');
+      const lb = document.getElementById('imageLightbox');
+      const lbImg = document.getElementById('lightboxImg');
+      const lbCaption = document.getElementById('lightboxCaption');
+      const lbDownload = document.getElementById('lightboxDownload');
+      const btnPrev = document.getElementById('lightboxPrev');
+      const btnNext = document.getElementById('lightboxNext');
+
+      let items = [];
+      let lbIndex = 0;
+
+      if (grid) {
+        const thumbs = grid.querySelectorAll('.thumb[data-fileid]');
+        items = Array.from(thumbs).map((el) => ({
+          id: el.getAttribute('data-fileid'),
+          filename: el.getAttribute('data-filename')
+        }));
+
+        thumbs.forEach((el, idx) => {
+          el.addEventListener('click', () => openAt(idx));
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openAt(idx);
+            }
+          });
+        });
+
+        btnPrev.addEventListener('click', () => move(-1));
+        btnNext.addEventListener('click', () => move(1));
+        lb.addEventListener('click', (e) => {
+          if (e.target.dataset.close === 'true') closeLb();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (lb.style.display !== 'none') {
+            if (e.key === 'Escape') closeLb();
+            if (e.key === 'ArrowLeft') move(-1);
+            if (e.key === 'ArrowRight') move(1);
+          }
+        });
+      }
+
+      function openAt(index) {
+        if (!items.length) return;
+        lbIndex = index;
+        render();
+        lb.style.display = 'block';
+        lb.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeLb() {
+        lb.style.display = 'none';
+        lb.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      function move(delta) {
+        lbIndex = (lbIndex + delta + items.length) % items.length;
+        render();
+      }
+
+      function render() {
+        const item = items[lbIndex];
+        const viewUrl = `/files/${item.id}/view`;
+        const dlUrl = `/files/${item.id}/download`;
+        lbImg.src = viewUrl;
+        lbImg.alt = item.filename || '첨부 이미지';
+        lbCaption.textContent = item.filename || '';
+        lbDownload.href = dlUrl;
+        lbDownload.setAttribute('download', item.filename || '');
+      }
+
+      // 반려 모달
+      window.openRejectModal = function () {
+        const m = document.getElementById('rejectModal');
+        m.style.display = 'flex';
+        setTimeout(() => document.getElementById('rejectReasonInput').focus(), 0);
+      }
+      window.closeRejectModal = function () {
+        const m = document.getElementById('rejectModal');
+        m.style.display = 'none';
+        document.getElementById('rejectReasonInput').value = '';
+      }
+      window.submitReject = function () {
+        const reason = document.getElementById('rejectReasonInput').value.trim();
+        if (!reason) { alert('반려 사유를 입력해 주세요.'); return; }
+        if (!confirm('입력한 사유로 반려 처리하시겠습니까?')) return;
+
+        document.getElementById('statusAction').value = 'reject';
+        document.getElementById('rejectReasonHidden').value = reason;
         document.getElementById('statusForm').submit();
-        return;
       }
 
-      if (action === 'hold') {
-        if (!confirm('보류 상태로 변경하시겠습니까?')) return;
+      // 상태 처리
+      window.submitStatus = function (action) {
+        if (action === 'approve') {
+          if (!confirm('승인 처리하시겠습니까?')) return;
+          document.getElementById('statusAction').value = 'approve';
+          document.getElementById('rejectReasonHidden').value = '';
+          const answer = document.getElementById('adminAnswer').value;
+          let hidden = document.getElementById('answerHidden');
+          if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'adminAnswer';
+            hidden.id = 'answerHidden';
+            document.getElementById('statusForm').appendChild(hidden);
+          }
+          hidden.value = answer;
+          document.getElementById('statusForm').submit();
+          return;
+        }
+
+        if (action === 'hold') {
+          if (!confirm('보류 상태로 변경하시겠습니까?')) return;
+        }
+
+        document.getElementById('statusAction').value = action;
+        document.getElementById('rejectReasonHidden').value = '';
+        document.getElementById('statusForm').submit();
       }
-
-      document.getElementById('statusAction').value = action;
-      document.getElementById('rejectReasonHidden').value = '';
-      document.getElementById('statusForm').submit();
-    }
-
-    function openRejectModal() {
-      const m = document.getElementById('rejectModal');
-      m.style.display = 'flex';
-      setTimeout(() => document.getElementById('rejectReasonInput').focus(), 0);
-    }
-    function closeRejectModal() {
-      const m = document.getElementById('rejectModal');
-      m.style.display = 'none';
-      document.getElementById('rejectReasonInput').value = '';
-    }
-    function submitReject() {
-      const reason = document.getElementById('rejectReasonInput').value.trim();
-      if (!reason) { alert('반려 사유를 입력해 주세요.'); return; }
-      if (!confirm('입력한 사유로 반려 처리하시겠습니까?')) return;
-
-      document.getElementById('statusAction').value = 'reject';
-      document.getElementById('rejectReasonHidden').value = reason;
-      document.getElementById('statusForm').submit();
-    }
+    })();
   </script>
 </body>
 
