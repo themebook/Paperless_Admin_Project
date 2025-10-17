@@ -628,3 +628,21 @@ tbody tr:hover {
   height: 16px;
   display: block;
 }
+
+.file-download {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid #cfd6dc;
+  border-radius: 6px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.file-download:hover {
+  background: #f3f4f6;
+  color: #0f172a;
+}

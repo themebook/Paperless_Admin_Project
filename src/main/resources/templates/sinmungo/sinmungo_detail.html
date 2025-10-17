@@ -30,7 +30,7 @@
           <dd>
             <span
               th:text="${dto.writerName != null ? dto.writerName : (dto.writerId != null ? 'ID ' + dto.writerId : '-')}">-</span>
-            <span th:if="${dto.telNum != null}" th:text="${' (' + dto.telNum + ')'}"></span>
+            <span th:if="${telNumHyphen != null}" th:text="${' (' + telNumHyphen + ')'}"></span>
           </dd>
 
           <dt style="color:#64748b;">접수일</dt>
@@ -98,10 +98,9 @@
             </div>
 
             <div th:if="${!(f.mimeType != null and #strings.startsWith(f.mimeType, 'image/'))}">
-              <a th:href="@{|/files/${f.fileId}/download|}" th:text="${f.fileName}">첨부</a>
-              <span style="color:#94a3b8;"
-                th:text="${' (' + (f.mimeType != null ? f.mimeType : 'application/octet-stream') + ', ' + f.fileSize + ' bytes)'}">
-              </span>
+              <a th:href="@{|/files/${f.fileId}/download|}" class="file-download">
+                <span th:text="${f.fileName}"></span>
+              </a>
             </div>
 
             <div class="filename one-line" th:title="${f.fileName}" th:text="${f.fileName}"></div>
