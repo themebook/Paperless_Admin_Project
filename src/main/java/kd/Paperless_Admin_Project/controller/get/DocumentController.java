@@ -1,7 +1,6 @@
 package kd.Paperless_Admin_Project.controller.get;
 
 import kd.Paperless_Admin_Project.dto.document.PaperlessDocListDto;
-import kd.Paperless_Admin_Project.entity.document.PaperlessDoc;
 import kd.Paperless_Admin_Project.repository.document.PaperlessDocRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -23,13 +22,11 @@ public class DocumentController {
       @RequestParam(required = false) String docType,
       Model model) {
 
-    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "plId"));
-    String st = (status  == null || status.isBlank())   ? null : status.trim();
-    String dt = (docType == null || docType.isBlank())  ? null : docType.trim();
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "submittedAt"));
+    String st = (status == null || status.isBlank()) ? null : status.trim();
+    String dt = (docType == null || docType.isBlank()) ? null : docType.trim();
 
-    Page<PaperlessDoc> pageEntity = paperlessDocRepository.adminSearch(st, dt, pageable);
-
-    Page<PaperlessDocListDto> dtoPage = pageEntity.map(PaperlessDocListDto::fromEntity);
+    Page<PaperlessDocListDto> dtoPage = paperlessDocRepository.adminSearchWithUserName(st, dt, pageable);
 
     model.addAttribute("items", dtoPage.getContent());
     model.addAttribute("totalCount", dtoPage.getTotalElements());

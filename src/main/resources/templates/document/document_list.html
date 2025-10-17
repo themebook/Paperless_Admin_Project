@@ -30,9 +30,8 @@
 
           <select name="docType" class="select" aria-label="문서 종류">
             <option value="" th:selected="${docType == ''}">전체 서류</option>
-            <option value="주민등록초본" th:selected="${docType == '주민등록초본'}">주민등록초본</option>
-            <option value="주민등록등본" th:selected="${docType == '주민등록등본'}">주민등록등본</option>
-            <option value="여권(재)발급" th:selected="${docType == '여권(재)발급'}">여권(재)발급</option>
+            <option value="RESIDENT_REGISTRATION" th:selected="${docType == 'RESIDENT_REGISTRATION'}">주민등록등초본</option>
+            <option value="PASSPORT" th:selected="${docType == 'PASSPORT'}">여권(재)발급</option>
           </select>
 
           <button class="btn" type="submit">검색</button>
@@ -48,7 +47,7 @@
         <table>
           <thead>
             <tr>
-              <th class="col-id">접수번호</th>
+              <th class="col-id">번호</th>
               <th class="col-title">발급서류</th>
               <th class="col-status">상태</th>
               <th class="col-owner">문서신청인</th>
@@ -56,26 +55,39 @@
               <th class="col-date">처리날짜</th>
             </tr>
           </thead>
-          <tbody>
-            <tr th:each="it : ${items}" th:attr="data-href=@{|/admin/document_detail/${it.plId}|}">
-              <td class="mono">#<span th:text="${it.plId}">0</span></td>
-              <td th:text="${it.docType}">-</td>
+          <tbody th:with="start=${totalCount - ((currentPage - 1) * pageSize)}">
+            <tr th:each="it, st : ${items}" th:attr="data-href=@{|/admin/document_detail/${it.plId}|}">
+              <td class="mono">#<span th:text="${start - st.index}">0</span></td>
+
+              <td th:switch="${it.docType}">
+                <span th:case="'RESIDENT_REGISTRATION'">주민등록등초본</span>
+                <span th:case="'PASSPORT'">여권(재)발급</span>
+                <span th:case="*">-</span>
+              </td>
 
               <td class="col-status">
                 <span class="state" th:switch="${it.status}">
-                  <span th:case="'접수'" class="dot recv"></span>
-                  <span th:case="'승인'" class="dot appr"></span>
-                  <span th:case="'보류'" class="dot hold"></span>
-                  <span th:case="'반려'" class="dot rej"></span>
+                  <span th:case="'RECEIVED'" class="dot recv"></span>
+                  <span th:case="'IN_PROGRESS'" class="dot hold"></span>
+                  <span th:case="'APPROVED'" class="dot appr"></span>
+                  <span th:case="'REJECTED'" class="dot rej"></span>
+                  <span th:case="'COMPLETED'" class="dot appr"></span>
                   <span th:case="*"
                     style="width:8px;height:8px;border-radius:50%;background:#cbd5e1;display:inline-block;"></span>
-                  <span th:text="${it.status != null ? it.status : '-'}">-</span>
+
+                  <span th:switch="${it.status}">
+                    <span th:case="'RECEIVED'">접수완료</span>
+                    <span th:case="'IN_PROGRESS'">처리중</span>
+                    <span th:case="'APPROVED'">승인</span>
+                    <span th:case="'REJECTED'">반려</span>
+                    <span th:case="'COMPLETED'">완료</span>
+                    <span th:case="*">-</span>
+                  </span>
                 </span>
               </td>
 
               <td class="col-owner">
-                <span
-                  th:text="${it.userName != null ? it.userName : (it.userId != null ? 'ID ' + it.userId : '-')}">-</span>
+                <span th:text="${it.userName != null ? it.userName : '-'}">-</span>
               </td>
 
               <td th:text="${it.submittedAt != null ? #temporals.format(it.submittedAt, 'yyyy-MM-dd') : '-'}">-</td>
@@ -86,6 +98,7 @@
               <td colspan="6" style="text-align:center; color:#99a1ad;">데이터가 없습니다.</td>
             </tr>
           </tbody>
+
         </table>
       </div>
 
