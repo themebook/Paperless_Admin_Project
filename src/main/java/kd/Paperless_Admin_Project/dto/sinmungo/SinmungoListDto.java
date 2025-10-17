@@ -17,7 +17,7 @@ public class SinmungoListDto {
   private LocalDateTime createdAt;
   private LocalDateTime answerDate;
   private Long adminId;
-  private String adminName; // 추가
+  private String adminName;
 
   public SinmungoListDto(Long smgId, String title, String status,
       LocalDateTime createdAt, LocalDateTime answerDate,
