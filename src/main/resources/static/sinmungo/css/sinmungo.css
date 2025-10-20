@@ -757,3 +757,114 @@ tbody tr:hover {
 .modal-backdrop[aria-hidden="false"] .modal {
   animation: modal-in .16s ease-out;
 }
+
+.modal--confirm {
+  max-width: 480px;
+  width: 92%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .12);
+  overflow: hidden;
+}
+
+.modal--confirm header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.modal--confirm .body {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal--confirm .confirm-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: #1d4ed8;
+}
+
+.modal--confirm .confirm-text {
+  font-size: 14px;
+  color: #0f172a;
+  line-height: 1.5;
+}
+
+.modal--confirm .footer {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal--confirm .footer .btn {
+  min-width: 70px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn.btn-ghost {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #334155;
+}
+
+.btn.btn-ghost:hover {
+  background: #f3f4f6;
+}
+
+.btn.primary {
+  background: #1d4ed8;
+  border: 1px solid #1d4ed8;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #1e40af;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal--confirm .footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  line-height: 1;
+  padding: 0 14px;
+  box-sizing: border-box;
+  min-width: 80px;
+}
+
+.modal--confirm .footer .btn.btn-ghost {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #334155;
+}
+
+.modal--confirm .footer .btn.primary {
+  background: #1d4ed8;
+  border: 1px solid #1d4ed8;
+  color: #fff;
+}

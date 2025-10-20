@@ -118,13 +118,13 @@
       <div class="card section">
         <h2 class="page-title" style="font-size:16px;">시민 답변(발송용)</h2>
 
-        <div th:if="${dto.status != '접수'}" style="margin:0 0 8px; font-size:13px; color:#64748b;">
+        <div th:if="${!(dto.status == '접수' or dto.status == '보류')}" style="margin:0 0 8px; font-size:13px; color:#64748b;">
           현재 상태(<span th:text="${dto.status}">-</span>)에서는 답변을 수정할 수 없습니다.
         </div>
 
         <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10" placeholder="시민에게 발송할 답변을 작성하세요."
           th:text="${dto.adminAnswer}"
-          th:attr="readonly=${dto.status != '접수'}, disabled=${dto.status != '접수'}"></textarea>
+          th:attr="readonly=${!(dto.status == '접수' or dto.status == '보류')}, disabled=${!(dto.status == '접수' or dto.status == '보류')}"></textarea>
 
         <div th:if="${dto.answerDate != null}" style="margin-top:8px; color:#64748b; font-size:13px;">
           마지막 등록일:
@@ -137,7 +137,7 @@
           <a class="btn" th:href="@{/admin/sinmungo_list}">목록으로</a>
         </div>
 
-        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;" th:if="${dto.status == '접수'}">
+        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;" th:if="${dto.status == '접수' or dto.status == '보류'}">
           <form id="statusForm" th:action="@{|/admin/sinmungo_detail/${dto.smgId}/status|}" method="post">
             <input type="hidden" name="action" id="statusAction" />
             <input type="hidden" name="rejectReason" id="rejectReasonHidden" />
@@ -170,12 +170,6 @@
     <div class="modal modal--confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
       <header id="confirmTitle">확인</header>
       <div class="body confirm-body">
-        <span class="confirm-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm-1 6a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm2 10h-2v-8h2v8z"
-              fill="currentColor" />
-          </svg>
-        </span>
         <p id="confirmMessage" class="confirm-text">처리하시겠습니까?</p>
       </div>
       <div class="footer">
