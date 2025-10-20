@@ -21,8 +21,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
 
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 
 @Controller
@@ -107,10 +109,11 @@ public class SinmungoController {
   @GetMapping("/admin/sinmungo_detail/{id}")
   public String detail(@PathVariable Long id, Model model) {
     SinmungoDetailDto dto = sinmungoRepository.findDetailWithNames(id);
-    if (dto == null) {
+    if (dto == null)
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "민원을 찾을 수 없습니다.");
-    }
     model.addAttribute("dto", dto);
+
+    model.addAttribute("telNumHyphen", formatPhone(dto.getTelNum()));
 
     List<Attachment> files = attachmentRepository
         .findByTargetTypeAndTargetIdOrderByFileIdAsc(ATTACH_TARGET, id);
@@ -139,9 +142,27 @@ public class SinmungoController {
   public String changeStatus(@PathVariable Long id,
       @RequestParam("action") String action,
       @RequestParam(value = "rejectReason", required = false) String rejectReason,
+      @RequestParam(value = "adminAnswer", required = false) String adminAnswer,
+      Authentication auth,
       RedirectAttributes ra) {
+
     Sinmungo e = sinmungoRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("민원 없음: " + id));
+
+    if (!"접수".equals(e.getStatus())) {
+      throw new IllegalStateException("접수 상태가 아닌 민원은 수정/상태 변경이 불가합니다.");
+    }
+
+    if (e.getAdminId() == null) {
+      Long me = currentAdminId(auth);
+      if (me != null)
+        e.setAdminId(me);
+    }
+
+    if (adminAnswer != null && !adminAnswer.isBlank()) {
+      e.setAdminAnswer(adminAnswer.trim());
+      e.setAnswerDate(LocalDateTime.now());
+    }
 
     switch (action) {
       case "approve" -> {
@@ -150,9 +171,8 @@ public class SinmungoController {
         ra.addFlashAttribute("msg", "승인(완료) 처리되었습니다.");
       }
       case "reject" -> {
-        if (rejectReason == null || rejectReason.isBlank()) {
+        if (rejectReason == null || rejectReason.isBlank())
           throw new IllegalArgumentException("반려 사유는 필수입니다.");
-        }
         e.setStatus("반려");
         e.setRejectReason(rejectReason.trim());
         ra.addFlashAttribute("msg", "반려 처리되었습니다.");
@@ -161,9 +181,6 @@ public class SinmungoController {
         e.setStatus("보류");
         e.setRejectReason(null);
         ra.addFlashAttribute("msg", "보류 처리되었습니다.");
-      }
-      case "receive" -> {
-        e.setStatus("접수");
       }
       default -> throw new IllegalArgumentException("알 수 없는 action: " + action);
     }
@@ -176,5 +193,73 @@ public class SinmungoController {
   public static class AssigneeOption {
     private Long id;
     private String name;
+  }
+
+  private Long currentAdminId(Authentication auth) {
+    if (auth == null || !auth.isAuthenticated())
+      return null;
+    Object p = auth.getPrincipal();
+    if (p instanceof AdminUserDetails aud && aud.getAdmin() != null)
+      return aud.getAdmin().getAdminId();
+    if (p instanceof Admin a)
+      return a.getAdminId();
+    if (p instanceof UserDetails ud)
+      return adminRepository.findByLoginId(ud.getUsername()).map(Admin::getAdminId).orElse(null);
+    if (p instanceof String s && !"anonymousUser".equals(s))
+      return adminRepository.findByLoginId(s).map(Admin::getAdminId).orElse(null);
+    return null;
+  }
+
+  private String formatPhone(String raw) {
+    if (raw == null)
+      return null;
+    String d = raw.replaceAll("\\D+", "");
+    if (d.startsWith("02")) {
+      if (d.length() == 9)
+        return d.replaceFirst("^(02)(\\d{3})(\\d{4})$", "$1-$2-$3");
+      if (d.length() == 10)
+        return d.replaceFirst("^(02)(\\d{4})(\\d{4})$", "$1-$2-$3");
+    }
+    if (d.length() == 10)
+      return d.replaceFirst("^(\\d{3})(\\d{3})(\\d{4})$", "$1-$2-$3");
+    if (d.length() == 11)
+      return d.replaceFirst("^(\\d{3})(\\d{4})(\\d{4})$", "$1-$2-$3");
+    return raw;
+  }
+
+  @GetMapping("/admin/rpa_sinmungo_list")
+  public String adminRpaSinmungoList(
+      Authentication auth,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) String q,
+      Model model) {
+
+    Long me = null;
+    if (auth != null && auth.isAuthenticated()) {
+      Object p = auth.getPrincipal();
+      if (p instanceof AdminUserDetails aud && aud.getAdmin() != null)
+        me = aud.getAdmin().getAdminId();
+      else if (p instanceof Admin a)
+        me = a.getAdminId();
+      else if (p instanceof UserDetails ud)
+        me = adminRepository.findByLoginId(ud.getUsername()).map(Admin::getAdminId).orElse(null);
+      else if (p instanceof String s && !"anonymousUser".equals(s))
+        me = adminRepository.findByLoginId(s).map(Admin::getAdminId).orElse(null);
+    }
+    model.addAttribute("adminId", me);
+
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+    String kw = (q == null || q.isBlank()) ? null : q.trim();
+    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminSearchReceivedWithoutAttachmentByCreatedAtAsc(kw, pageable);
+
+    model.addAttribute("items", dtoPage.getContent());
+    model.addAttribute("totalCount", dtoPage.getTotalElements());
+    model.addAttribute("currentPage", page);
+    model.addAttribute("pageSize", size);
+    model.addAttribute("totalPages", dtoPage.getTotalPages());
+    model.addAttribute("q", kw == null ? "" : kw);
+    model.addAttribute("status", "접수");
+    return "/rpa/rpa_sinmungo_list";
   }
 }

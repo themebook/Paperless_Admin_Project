@@ -46,7 +46,7 @@
                 1
               </td>
               <td>
-                <span class="badge badge--pinned" th:if="${it.isPinned == 'Y'}">상단</span>
+                <span class="badge badge--pinned" th:if="${it.isPinned == 'Y'}">고정</span>
                 <a th:href="@{|/admin/notice_detail/${it.noticeId}|}" 
                 th:text="${it.targetAudience == 'USER' ? '[유저용] ' + it.title 
                         : (it.targetAudience == 'ADMIN' ? '[직원용] ' + it.title 

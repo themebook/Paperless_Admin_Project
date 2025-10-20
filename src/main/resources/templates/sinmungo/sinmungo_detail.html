@@ -15,7 +15,7 @@
     <header th:replace="~{fragments/topbar :: topbar}"></header>
     <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <main class="main" role="main">
+    <main class="main" role="main" th:classappend="${dto.status != '접수'} ? ' is-locked' : ''">
       <h1 class="page-title">
         <span th:text="${'민원 #' + dto.smgId}">민원 #0000</span>
         <span> · </span>
@@ -30,7 +30,7 @@
           <dd>
             <span
               th:text="${dto.writerName != null ? dto.writerName : (dto.writerId != null ? 'ID ' + dto.writerId : '-')}">-</span>
-            <span th:if="${dto.telNum != null}" th:text="${' (' + dto.telNum + ')'}"></span>
+            <span th:if="${telNumHyphen != null}" th:text="${' (' + telNumHyphen + ')'}"></span>
           </dd>
 
           <dt style="color:#64748b;">접수일</dt>
@@ -45,8 +45,8 @@
             <span th:case="'접수'" class="badge badge--pending">접수</span>
             <span th:case="'승인'" class="badge badge--success">승인</span>
             <span th:case="'반려'" class="badge badge--warn">반려</span>
-            <span th:case="'보류'" class="badge">보류</span>
-            <span th:case="*" class="badge">-</span>
+            <span th:case="'보류'" class="badge badge--hold">보류</span>
+            <span th:case="*" class="badge badge--default">-</span>
           </dd>
 
           <dt style="color:#64748b;">담당자</dt>
@@ -76,6 +76,13 @@
         <div class="prose" th:utext="${#strings.escapeXml(dto.content)?.replaceAll('\n','<br/>')}"></div>
       </div>
 
+      <div class="card section" th:if="${dto.status == '반려' and !#strings.isEmpty(dto.rejectReason)}">
+        <h2 class="page-title" style="font-size:16px;">반려 사유</h2>
+        <div class="prose" style="white-space:pre-wrap; color:#991b1b;">
+          <span th:text="${dto.rejectReason}">사유</span>
+        </div>
+      </div>
+
       <div class="card section" th:if="${files != null}">
         <h2 class="page-title" style="font-size:16px;">첨부파일</h2>
 
@@ -98,10 +105,9 @@
             </div>
 
             <div th:if="${!(f.mimeType != null and #strings.startsWith(f.mimeType, 'image/'))}">
-              <a th:href="@{|/files/${f.fileId}/download|}" th:text="${f.fileName}">첨부</a>
-              <span style="color:#94a3b8;"
-                th:text="${' (' + (f.mimeType != null ? f.mimeType : 'application/octet-stream') + ', ' + f.fileSize + ' bytes)'}">
-              </span>
+              <a th:href="@{|/files/${f.fileId}/download|}" class="file-download">
+                <span th:text="${f.fileName}"></span>
+              </a>
             </div>
 
             <div class="filename one-line" th:title="${f.fileName}" th:text="${f.fileName}"></div>
@@ -111,8 +117,15 @@
 
       <div class="card section">
         <h2 class="page-title" style="font-size:16px;">시민 답변(발송용)</h2>
+
+        <div th:if="${dto.status != '접수'}" style="margin:0 0 8px; font-size:13px; color:#64748b;">
+          현재 상태(<span th:text="${dto.status}">-</span>)에서는 답변을 수정할 수 없습니다.
+        </div>
+
         <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10" placeholder="시민에게 발송할 답변을 작성하세요."
-          th:text="${dto.adminAnswer}"></textarea>
+          th:text="${dto.adminAnswer}"
+          th:attr="readonly=${dto.status != '접수'}, disabled=${dto.status != '접수'}"></textarea>
+
         <div th:if="${dto.answerDate != null}" style="margin-top:8px; color:#64748b; font-size:13px;">
           마지막 등록일:
           <span th:text="${#temporals.format(dto.answerDate, 'yyyy-MM-dd HH:mm')}"></span>
@@ -124,10 +137,11 @@
           <a class="btn" th:href="@{/admin/sinmungo_list}">목록으로</a>
         </div>
 
-        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;" th:if="${dto.status == '접수'}">
           <form id="statusForm" th:action="@{|/admin/sinmungo_detail/${dto.smgId}/status|}" method="post">
             <input type="hidden" name="action" id="statusAction" />
             <input type="hidden" name="rejectReason" id="rejectReasonHidden" />
+            <input type="hidden" name="adminAnswer" id="answerHidden" />
           </form>
 
           <button class="btn primary" type="button" onclick="submitStatus('approve')">승인</button>
@@ -152,7 +166,6 @@
     </div>
   </div>
 
-  <!-- 이미지 라이트박스 -->
   <div id="imageLightbox" class="lightbox" aria-hidden="true" style="display:none;">
     <div class="lightbox__backdrop" data-close="true"></div>
     <div class="lightbox__content" role="dialog" aria-modal="true" aria-label="이미지 미리보기">
@@ -246,6 +259,12 @@
         lbDownload.setAttribute('download', item.filename || '');
       }
 
+      function ensureAnswerHidden() {
+        const answer = document.getElementById('adminAnswer')?.value || '';
+        const hidden = document.getElementById('answerHidden');
+        hidden.value = answer;
+      }
+
       // 반려 모달
       window.openRejectModal = function () {
         const m = document.getElementById('rejectModal');
@@ -264,35 +283,20 @@
 
         document.getElementById('statusAction').value = 'reject';
         document.getElementById('rejectReasonHidden').value = reason;
+        ensureAnswerHidden();
         document.getElementById('statusForm').submit();
       }
 
-      // 상태 처리
       window.submitStatus = function (action) {
         if (action === 'approve') {
           if (!confirm('승인 처리하시겠습니까?')) return;
-          document.getElementById('statusAction').value = 'approve';
-          document.getElementById('rejectReasonHidden').value = '';
-          const answer = document.getElementById('adminAnswer').value;
-          let hidden = document.getElementById('answerHidden');
-          if (!hidden) {
-            hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = 'adminAnswer';
-            hidden.id = 'answerHidden';
-            document.getElementById('statusForm').appendChild(hidden);
-          }
-          hidden.value = answer;
-          document.getElementById('statusForm').submit();
-          return;
         }
-
         if (action === 'hold') {
           if (!confirm('보류 상태로 변경하시겠습니까?')) return;
         }
-
         document.getElementById('statusAction').value = action;
         document.getElementById('rejectReasonHidden').value = '';
+        ensureAnswerHidden();
         document.getElementById('statusForm').submit();
       }
     })();
