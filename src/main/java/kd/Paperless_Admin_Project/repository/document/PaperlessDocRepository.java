@@ -1,10 +1,7 @@
 // src/main/java/kd/Paperless_Admin_Project/repository/document/PaperlessDocRepository.java
 package kd.Paperless_Admin_Project.repository.document;
 
-<<<<<<< HEAD
-=======
 import kd.Paperless_Admin_Project.dto.document.PaperlessDocDetailDto;
->>>>>>> dev_cwc
 import kd.Paperless_Admin_Project.dto.document.PaperlessDocListDto;
 import kd.Paperless_Admin_Project.entity.document.PaperlessDoc;
 import org.springframework.data.domain.Page;
@@ -14,10 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface PaperlessDocRepository extends JpaRepository<PaperlessDoc, Long> {
 
-<<<<<<< HEAD
-=======
   // ✅ 기존: 전체 목록 (상태/문서유형)
->>>>>>> dev_cwc
   @Query(value = """
       SELECT new kd.Paperless_Admin_Project.dto.document.PaperlessDocListDto(
           d.plId,
@@ -38,12 +32,8 @@ public interface PaperlessDocRepository extends JpaRepository<PaperlessDoc, Long
       WHERE (:status IS NULL OR d.status = :status)
         AND (:docType IS NULL OR d.docType = :docType)
       ORDER BY d.submittedAt DESC
-<<<<<<< HEAD
-      """, countQuery = """
-=======
       """,
       countQuery = """
->>>>>>> dev_cwc
       SELECT COUNT(d)
       FROM PaperlessDoc d
       WHERE (:status IS NULL OR d.status = :status)
