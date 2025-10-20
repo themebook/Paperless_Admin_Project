@@ -707,3 +707,53 @@ tbody tr:hover {
 .badge--default::before {
   background: #cbd5e1;
 }
+
+.modal--confirm {
+  max-width: 460px;
+}
+
+.confirm-body {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: start;
+  gap: 10px;
+}
+
+.confirm-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d4ed8;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.confirm-text {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+.modal .footer .btn {
+  min-width: 76px;
+  height: 36px;
+  border-radius: 9px;
+}
+
+.btn.btn-ghost {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #334155;
+}
+
+.btn.btn-ghost:hover {
+  background: #eef2f7;
+}
+
+.modal-backdrop[aria-hidden="false"] .modal {
+  animation: modal-in .16s ease-out;
+}

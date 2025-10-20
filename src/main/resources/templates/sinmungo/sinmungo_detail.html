@@ -166,6 +166,25 @@
     </div>
   </div>
 
+  <div id="confirmModal" class="modal-backdrop" aria-hidden="true" style="display:none;">
+    <div class="modal modal--confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <header id="confirmTitle">확인</header>
+      <div class="body confirm-body">
+        <span class="confirm-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm-1 6a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm2 10h-2v-8h2v8z"
+              fill="currentColor" />
+          </svg>
+        </span>
+        <p id="confirmMessage" class="confirm-text">처리하시겠습니까?</p>
+      </div>
+      <div class="footer">
+        <button id="confirmCancel" class="btn btn-ghost" type="button">취소</button>
+        <button id="confirmOk" class="btn primary" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
   <div id="imageLightbox" class="lightbox" aria-hidden="true" style="display:none;">
     <div class="lightbox__backdrop" data-close="true"></div>
     <div class="lightbox__content" role="dialog" aria-modal="true" aria-label="이미지 미리보기">
@@ -262,38 +281,98 @@
       function ensureAnswerHidden() {
         const answer = document.getElementById('adminAnswer')?.value || '';
         const hidden = document.getElementById('answerHidden');
-        hidden.value = answer;
+        if (hidden) hidden.value = answer;
       }
 
-      // 반려 모달
       window.openRejectModal = function () {
         const m = document.getElementById('rejectModal');
         m.style.display = 'flex';
+        m.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
         setTimeout(() => document.getElementById('rejectReasonInput').focus(), 0);
       }
       window.closeRejectModal = function () {
         const m = document.getElementById('rejectModal');
         m.style.display = 'none';
+        m.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
         document.getElementById('rejectReasonInput').value = '';
       }
       window.submitReject = function () {
         const reason = document.getElementById('rejectReasonInput').value.trim();
         if (!reason) { alert('반려 사유를 입력해 주세요.'); return; }
-        if (!confirm('입력한 사유로 반려 처리하시겠습니까?')) return;
-
         document.getElementById('statusAction').value = 'reject';
         document.getElementById('rejectReasonHidden').value = reason;
         ensureAnswerHidden();
         document.getElementById('statusForm').submit();
       }
 
+      const confirmModal = document.getElementById('confirmModal');
+      const confirmMsgEl = document.getElementById('confirmMessage');
+      const confirmOkBtn = document.getElementById('confirmOk');
+      const confirmCancelBtn = document.getElementById('confirmCancel');
+      let confirmOkHandler = null;
+
+      function openConfirm(message, onOk) {
+        confirmMsgEl.textContent = message || '처리하시겠습니까?';
+        confirmOkHandler = onOk;
+
+        confirmModal.style.display = 'flex';
+        confirmModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        setTimeout(() => confirmOkBtn.focus(), 0);
+      }
+
+      function closeConfirm() {
+        confirmModal.style.display = 'none';
+        confirmModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        confirmOkHandler = null;
+      }
+
+      confirmOkBtn.addEventListener('click', () => {
+        if (typeof confirmOkHandler === 'function') confirmOkHandler();
+        closeConfirm();
+      });
+      confirmCancelBtn.addEventListener('click', () => {
+        closeConfirm();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (confirmModal.style.display !== 'none') {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            closeConfirm();
+          }
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (typeof confirmOkHandler === 'function') confirmOkHandler();
+            closeConfirm();
+          }
+        }
+      });
+
       window.submitStatus = function (action) {
         if (action === 'approve') {
-          if (!confirm('승인 처리하시겠습니까?')) return;
+          openConfirm('승인 처리하시겠습니까?', () => {
+            document.getElementById('statusAction').value = 'approve';
+            document.getElementById('rejectReasonHidden').value = '';
+            ensureAnswerHidden();
+            document.getElementById('statusForm').submit();
+          });
+          return;
         }
         if (action === 'hold') {
-          if (!confirm('보류 상태로 변경하시겠습니까?')) return;
+          openConfirm('보류 상태로 변경하시겠습니까?', () => {
+            document.getElementById('statusAction').value = 'hold';
+            document.getElementById('rejectReasonHidden').value = '';
+            ensureAnswerHidden();
+            document.getElementById('statusForm').submit();
+          });
+          return;
         }
+
         document.getElementById('statusAction').value = action;
         document.getElementById('rejectReasonHidden').value = '';
         ensureAnswerHidden();
