@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RPA용 접수 민원</title>
+  <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/sinmungo/css/sinmungo.css}" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header th:replace="~{fragments/topbar :: topbar}"></header>
+    <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+    <main class="main" role="main">
+      <h1 class="page-title">RPA용 접수 민원</h1>
+
+      <div class="card section">
+        <form th:action="@{/admin/rpa_sinmungo_list}" method="get" class="toolbar">
+          <input class="input" type="text" name="q" placeholder="제목/접수번호 검색" th:value="${q}" />
+          <button class="btn" type="submit">검색</button>
+          <a class="btn" th:href="@{/admin/rpa_sinmungo_list}">초기화</a>
+        </form>
+      </div>
+
+      <div class="card table-wrap section fixed" th:with="rowCount=${pageSize}">
+        <script th:inline="text">
+          document.documentElement.style.setProperty('--row-count', '[[${rowCount}]]');
+        </script>
+
+        <table>
+          <thead>
+            <tr>
+              <th class="col-id">접수번호</th>
+              <th class="col-title">제목</th>
+              <th class="col-date">접수일</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="it : ${items}" th:attr="data-href=@{|/admin/sinmungo_detail/${it.smgId}|}">
+              <td class="mono">#<span th:text="${it.smgId}">1001</span></td>
+              <td>
+                <a class="one-line" th:href="@{|/admin/sinmungo_detail/${it.smgId}|}" th:text="${it.title}">제목</a>
+              </td>
+              <td th:text="${it.createdAt != null ? #temporals.format(it.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(items)}">
+              <td colspan="3" style="text-align:center; color:#99a1ad;">데이터가 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <a class="btn sm"
+          th:href="@{/admin/rpa_sinmungo_list(page=${currentPage > 1 ? currentPage - 1 : 1}, size=${pageSize}, q=${q})}">
+          이전
+        </a>
+        <span style="font-size:13px; color:#64748b;"
+          th:text="${currentPage + ' / ' + (totalPages == 0 ? 1 : totalPages)}">1 / 1</span>
+        <a class="btn sm"
+          th:href="@{/admin/rpa_sinmungo_list(page=${currentPage < totalPages ? currentPage + 1 : totalPages}, size=${pageSize}, q=${q})}">
+          다음
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const current = document.querySelector('.nav a[href="/admin/rpa_sinmungo_list"]');
+      if (current) current.classList.add('active');
+    })();
+
+    (function () {
+      document.querySelectorAll('tbody tr[data-href]').forEach(tr => {
+        tr.addEventListener('click', (e) => {
+          if (e.target.closest('a')) return;
+          const href = tr.getAttribute('data-href');
+          if (href) location.href = href;
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>

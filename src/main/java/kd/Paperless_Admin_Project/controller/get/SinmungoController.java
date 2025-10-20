@@ -226,4 +226,41 @@ public class SinmungoController {
       return d.replaceFirst("^(\\d{3})(\\d{4})(\\d{4})$", "$1-$2-$3");
     return raw;
   }
+
+  @GetMapping("/admin/rpa_sinmungo_list")
+  public String adminRpaSinmungoList(
+      Authentication auth,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) String q,
+      Model model) {
+
+    Long me = null;
+    if (auth != null && auth.isAuthenticated()) {
+      Object p = auth.getPrincipal();
+      if (p instanceof AdminUserDetails aud && aud.getAdmin() != null)
+        me = aud.getAdmin().getAdminId();
+      else if (p instanceof Admin a)
+        me = a.getAdminId();
+      else if (p instanceof UserDetails ud)
+        me = adminRepository.findByLoginId(ud.getUsername()).map(Admin::getAdminId).orElse(null);
+      else if (p instanceof String s && !"anonymousUser".equals(s))
+        me = adminRepository.findByLoginId(s).map(Admin::getAdminId).orElse(null);
+    }
+    model.addAttribute("adminId", me);
+
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "smgId"));
+    String kw = (q == null || q.isBlank()) ? null : q.trim();
+
+    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminSearchWithName(kw, "접수", pageable);
+
+    model.addAttribute("items", dtoPage.getContent());
+    model.addAttribute("totalCount", dtoPage.getTotalElements());
+    model.addAttribute("currentPage", page);
+    model.addAttribute("pageSize", size);
+    model.addAttribute("totalPages", dtoPage.getTotalPages());
+    model.addAttribute("q", kw == null ? "" : kw);
+    model.addAttribute("status", "접수");
+    return "/rpa/rpa_sinmungo_list";
+  }
 }

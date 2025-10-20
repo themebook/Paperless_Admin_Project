@@ -646,3 +646,64 @@ tbody tr:hover {
   background: #f3f4f6;
   color: #0f172a;
 }
+
+.badge {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #94a3b8;
+}
+
+.badge--pending {
+  color: #374151;
+}
+
+.badge--pending::before {
+  background: #94a3b8;
+}
+
+.badge--success {
+  color: #065f46;
+}
+
+.badge--success::before {
+  background: #10b981;
+}
+
+.badge--warn {
+  color: #991b1b;
+}
+
+.badge--warn::before {
+  background: #ef4444;
+}
+
+.badge--hold {
+  color: #9a3412;
+}
+
+.badge--hold::before {
+  background: #f59e0b;
+}
+
+.badge--default {
+  color: #475569;
+}
+
+.badge--default::before {
+  background: #cbd5e1;
+}
