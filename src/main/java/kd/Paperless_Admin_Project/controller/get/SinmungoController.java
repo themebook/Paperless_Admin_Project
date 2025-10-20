@@ -249,10 +249,9 @@ public class SinmungoController {
     }
     model.addAttribute("adminId", me);
 
-    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size, Sort.by(Sort.Direction.DESC, "smgId"));
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
     String kw = (q == null || q.isBlank()) ? null : q.trim();
-
-    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminSearchWithName(kw, "접수", pageable);
+    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminSearchReceivedWithoutAttachmentByCreatedAtAsc(kw, pageable);
 
     model.addAttribute("items", dtoPage.getContent());
     model.addAttribute("totalCount", dtoPage.getTotalElements());

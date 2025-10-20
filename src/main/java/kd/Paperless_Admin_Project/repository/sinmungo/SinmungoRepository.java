@@ -169,4 +169,35 @@ public interface SinmungoRepository extends JpaRepository<Sinmungo, Long> {
   long countByAdminId(Long adminId);
 
   long countByAdminIdAndStatus(Long adminId, String status);
+
+  @Query(value = """
+      SELECT new kd.Paperless_Admin_Project.dto.sinmungo.SinmungoListDto(
+               s.smgId, s.title, s.status, s.createdAt, s.answerDate, s.adminId, a.adminName)
+      FROM Sinmungo s
+      LEFT JOIN Admin a ON a.adminId = s.adminId
+      WHERE s.status = '접수'
+        AND ( :q IS NULL
+              OR LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%') )
+        AND NOT EXISTS (
+              SELECT 1 FROM Attachment at
+              WHERE at.targetType = 'SINMUNGO'
+                AND at.targetId = s.smgId
+        )
+      ORDER BY s.createdAt ASC
+      """, countQuery = """
+      SELECT COUNT(s)
+      FROM Sinmungo s
+      WHERE s.status = '접수'
+        AND ( :q IS NULL
+              OR LOWER(s.title) LIKE LOWER(CONCAT('%', :q, '%'))
+              OR CAST(s.smgId AS string) LIKE CONCAT('%', :q, '%') )
+        AND NOT EXISTS (
+              SELECT 1 FROM Attachment at
+              WHERE at.targetType = 'SINMUNGO'
+                AND at.targetId = s.smgId
+        )
+      """)
+  Page<SinmungoListDto> adminSearchReceivedWithoutAttachmentByCreatedAtAsc(
+      @Param("q") String q, Pageable pageable);
 }
