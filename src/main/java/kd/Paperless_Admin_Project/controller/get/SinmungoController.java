@@ -72,7 +72,7 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    return "/sinmungo/sinmungo_list";
+    return "sinmungo/sinmungo_list";
   }
 
   @GetMapping("/admin/sinmungo_list/{adminId}")
@@ -101,7 +101,7 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    return "/sinmungo/sinmungo_my";
+    return "sinmungo/sinmungo_my";
   }
 
   @GetMapping("/admin/sinmungo_detail/{id}")
@@ -176,5 +176,73 @@ public class SinmungoController {
   public static class AssigneeOption {
     private Long id;
     private String name;
+  }
+
+  private Long currentAdminId(Authentication auth) {
+    if (auth == null || !auth.isAuthenticated())
+      return null;
+    Object p = auth.getPrincipal();
+    if (p instanceof AdminUserDetails aud && aud.getAdmin() != null)
+      return aud.getAdmin().getAdminId();
+    if (p instanceof Admin a)
+      return a.getAdminId();
+    if (p instanceof UserDetails ud)
+      return adminRepository.findByLoginId(ud.getUsername()).map(Admin::getAdminId).orElse(null);
+    if (p instanceof String s && !"anonymousUser".equals(s))
+      return adminRepository.findByLoginId(s).map(Admin::getAdminId).orElse(null);
+    return null;
+  }
+
+  private String formatPhone(String raw) {
+    if (raw == null)
+      return null;
+    String d = raw.replaceAll("\\D+", "");
+    if (d.startsWith("02")) {
+      if (d.length() == 9)
+        return d.replaceFirst("^(02)(\\d{3})(\\d{4})$", "$1-$2-$3");
+      if (d.length() == 10)
+        return d.replaceFirst("^(02)(\\d{4})(\\d{4})$", "$1-$2-$3");
+    }
+    if (d.length() == 10)
+      return d.replaceFirst("^(\\d{3})(\\d{3})(\\d{4})$", "$1-$2-$3");
+    if (d.length() == 11)
+      return d.replaceFirst("^(\\d{3})(\\d{4})(\\d{4})$", "$1-$2-$3");
+    return raw;
+  }
+
+  @GetMapping("/admin/rpa_sinmungo_list")
+  public String adminRpaSinmungoList(
+      Authentication auth,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size,
+      @RequestParam(required = false) String q,
+      Model model) {
+
+    Long me = null;
+    if (auth != null && auth.isAuthenticated()) {
+      Object p = auth.getPrincipal();
+      if (p instanceof AdminUserDetails aud && aud.getAdmin() != null)
+        me = aud.getAdmin().getAdminId();
+      else if (p instanceof Admin a)
+        me = a.getAdminId();
+      else if (p instanceof UserDetails ud)
+        me = adminRepository.findByLoginId(ud.getUsername()).map(Admin::getAdminId).orElse(null);
+      else if (p instanceof String s && !"anonymousUser".equals(s))
+        me = adminRepository.findByLoginId(s).map(Admin::getAdminId).orElse(null);
+    }
+    model.addAttribute("adminId", me);
+
+    Pageable pageable = PageRequest.of(Math.max(0, page - 1), size);
+    String kw = (q == null || q.isBlank()) ? null : q.trim();
+    Page<SinmungoListDto> dtoPage = sinmungoRepository.adminSearchReceivedWithoutAttachmentByCreatedAtAsc(kw, pageable);
+
+    model.addAttribute("items", dtoPage.getContent());
+    model.addAttribute("totalCount", dtoPage.getTotalElements());
+    model.addAttribute("currentPage", page);
+    model.addAttribute("pageSize", size);
+    model.addAttribute("totalPages", dtoPage.getTotalPages());
+    model.addAttribute("q", kw == null ? "" : kw);
+    model.addAttribute("status", "접수");
+    return "rpa/rpa_sinmungo_list";
   }
 }
