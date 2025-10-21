@@ -144,7 +144,7 @@
             <input type="hidden" name="adminAnswer" id="answerHidden" />
           </form>
 
-          <button class="btn primary" type="button" onclick="submitStatus('approve')">승인</button>
+          <button class="btn primary" type="button" onclick="submitStatus('approve')">작성</button>
           <button class="btn" type="button" onclick="submitStatus('hold')">보류</button>
           <button class="btn warn" type="button" onclick="openRejectModal()">반려</button>
         </div>
@@ -349,7 +349,7 @@
 
       window.submitStatus = function (action) {
         if (action === 'approve') {
-          openConfirm('승인 처리하시겠습니까?', () => {
+          openConfirm('작성하시겠습니까?', () => {
             document.getElementById('statusAction').value = 'approve';
             document.getElementById('rejectReasonHidden').value = '';
             ensureAnswerHidden();
