@@ -58,7 +58,7 @@ public class NoticeController {
     model.addAttribute("totalCount", result.getTotalElements());
     model.addAttribute("q", q);
 
-    return "/notice/notice_list";
+    return "notice/notice_list";
   }
 
   @Transactional
@@ -80,7 +80,7 @@ public class NoticeController {
     model.addAttribute("prev", prev.isEmpty() ? null : prev.get(0));
     model.addAttribute("next", next.isEmpty() ? null : next.get(0));
 
-    return "/notice/notice_detail";
+    return "notice/notice_detail";
   }
 
   @GetMapping("/admin/notice_write")
@@ -91,7 +91,7 @@ public class NoticeController {
       form.setTargetAudience("ADMIN");
       model.addAttribute("form", form);
     }
-    return "/notice/notice_write";
+    return "notice/notice_write";
   }
 
   @PostMapping(value = "/admin/notice_write", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -162,7 +162,7 @@ public class NoticeController {
         .findByTargetTypeAndTargetIdOrderByFileIdAsc("NOTICE", id);
     model.addAttribute("files", files);
 
-    return "/notice/notice_edit";
+    return "notice/notice_edit";
   }
 
   @PostMapping("/admin/notice_edit/{id}")

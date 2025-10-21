@@ -74,7 +74,7 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    return "/sinmungo/sinmungo_list";
+    return "sinmungo/sinmungo_list";
   }
 
   @GetMapping("/admin/sinmungo_list/{adminId}")
@@ -103,7 +103,7 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    return "/sinmungo/sinmungo_my";
+    return "sinmungo/sinmungo_my";
   }
 
   @GetMapping("/admin/sinmungo_detail/{id}")
@@ -260,6 +260,6 @@ public class SinmungoController {
     model.addAttribute("totalPages", dtoPage.getTotalPages());
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", "접수");
-    return "/rpa/rpa_sinmungo_list";
+    return "rpa/rpa_sinmungo_list";
   }
 }
