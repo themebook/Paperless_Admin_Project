@@ -118,13 +118,13 @@
       <div class="card section">
         <h2 class="page-title" style="font-size:16px;">시민 답변(발송용)</h2>
 
-        <div th:if="${dto.status != '접수'}" style="margin:0 0 8px; font-size:13px; color:#64748b;">
+        <div th:if="${!(dto.status == '접수' or dto.status == '보류')}" style="margin:0 0 8px; font-size:13px; color:#64748b;">
           현재 상태(<span th:text="${dto.status}">-</span>)에서는 답변을 수정할 수 없습니다.
         </div>
 
         <textarea class="textarea" id="adminAnswer" name="adminAnswer" rows="10" placeholder="시민에게 발송할 답변을 작성하세요."
           th:text="${dto.adminAnswer}"
-          th:attr="readonly=${dto.status != '접수'}, disabled=${dto.status != '접수'}"></textarea>
+          th:attr="readonly=${!(dto.status == '접수' or dto.status == '보류')}, disabled=${!(dto.status == '접수' or dto.status == '보류')}"></textarea>
 
         <div th:if="${dto.answerDate != null}" style="margin-top:8px; color:#64748b; font-size:13px;">
           마지막 등록일:
@@ -137,14 +137,14 @@
           <a class="btn" th:href="@{/admin/sinmungo_list}">목록으로</a>
         </div>
 
-        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;" th:if="${dto.status == '접수'}">
+        <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;" th:if="${dto.status == '접수' or dto.status == '보류'}">
           <form id="statusForm" th:action="@{|/admin/sinmungo_detail/${dto.smgId}/status|}" method="post">
             <input type="hidden" name="action" id="statusAction" />
             <input type="hidden" name="rejectReason" id="rejectReasonHidden" />
             <input type="hidden" name="adminAnswer" id="answerHidden" />
           </form>
 
-          <button class="btn primary" type="button" onclick="submitStatus('approve')">승인</button>
+          <button class="btn primary" type="button" onclick="submitStatus('approve')">작성</button>
           <button class="btn" type="button" onclick="submitStatus('hold')">보류</button>
           <button class="btn warn" type="button" onclick="openRejectModal()">반려</button>
         </div>
@@ -162,6 +162,19 @@
       <div class="footer">
         <button class="btn" type="button" onclick="closeRejectModal()">취소</button>
         <button class="btn warn" type="button" onclick="submitReject()">반려 확정</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal-backdrop" aria-hidden="true" style="display:none;">
+    <div class="modal modal--confirm" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <header id="confirmTitle">확인</header>
+      <div class="body confirm-body">
+        <p id="confirmMessage" class="confirm-text">처리하시겠습니까?</p>
+      </div>
+      <div class="footer">
+        <button id="confirmCancel" class="btn btn-ghost" type="button">취소</button>
+        <button id="confirmOk" class="btn primary" type="button">확인</button>
       </div>
     </div>
   </div>
@@ -262,38 +275,98 @@
       function ensureAnswerHidden() {
         const answer = document.getElementById('adminAnswer')?.value || '';
         const hidden = document.getElementById('answerHidden');
-        hidden.value = answer;
+        if (hidden) hidden.value = answer;
       }
 
-      // 반려 모달
       window.openRejectModal = function () {
         const m = document.getElementById('rejectModal');
         m.style.display = 'flex';
+        m.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
         setTimeout(() => document.getElementById('rejectReasonInput').focus(), 0);
       }
       window.closeRejectModal = function () {
         const m = document.getElementById('rejectModal');
         m.style.display = 'none';
+        m.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
         document.getElementById('rejectReasonInput').value = '';
       }
       window.submitReject = function () {
         const reason = document.getElementById('rejectReasonInput').value.trim();
         if (!reason) { alert('반려 사유를 입력해 주세요.'); return; }
-        if (!confirm('입력한 사유로 반려 처리하시겠습니까?')) return;
-
         document.getElementById('statusAction').value = 'reject';
         document.getElementById('rejectReasonHidden').value = reason;
         ensureAnswerHidden();
         document.getElementById('statusForm').submit();
       }
 
+      const confirmModal = document.getElementById('confirmModal');
+      const confirmMsgEl = document.getElementById('confirmMessage');
+      const confirmOkBtn = document.getElementById('confirmOk');
+      const confirmCancelBtn = document.getElementById('confirmCancel');
+      let confirmOkHandler = null;
+
+      function openConfirm(message, onOk) {
+        confirmMsgEl.textContent = message || '처리하시겠습니까?';
+        confirmOkHandler = onOk;
+
+        confirmModal.style.display = 'flex';
+        confirmModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        setTimeout(() => confirmOkBtn.focus(), 0);
+      }
+
+      function closeConfirm() {
+        confirmModal.style.display = 'none';
+        confirmModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        confirmOkHandler = null;
+      }
+
+      confirmOkBtn.addEventListener('click', () => {
+        if (typeof confirmOkHandler === 'function') confirmOkHandler();
+        closeConfirm();
+      });
+      confirmCancelBtn.addEventListener('click', () => {
+        closeConfirm();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (confirmModal.style.display !== 'none') {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            closeConfirm();
+          }
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (typeof confirmOkHandler === 'function') confirmOkHandler();
+            closeConfirm();
+          }
+        }
+      });
+
       window.submitStatus = function (action) {
         if (action === 'approve') {
-          if (!confirm('승인 처리하시겠습니까?')) return;
+          openConfirm('작성하시겠습니까?', () => {
+            document.getElementById('statusAction').value = 'approve';
+            document.getElementById('rejectReasonHidden').value = '';
+            ensureAnswerHidden();
+            document.getElementById('statusForm').submit();
+          });
+          return;
         }
         if (action === 'hold') {
-          if (!confirm('보류 상태로 변경하시겠습니까?')) return;
+          openConfirm('보류 상태로 변경하시겠습니까?', () => {
+            document.getElementById('statusAction').value = 'hold';
+            document.getElementById('rejectReasonHidden').value = '';
+            ensureAnswerHidden();
+            document.getElementById('statusForm').submit();
+          });
+          return;
         }
+
         document.getElementById('statusAction').value = action;
         document.getElementById('rejectReasonHidden').value = '';
         ensureAnswerHidden();
