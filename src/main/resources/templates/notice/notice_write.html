@@ -75,6 +75,15 @@
       </div>
     </main>
   </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const current = document.querySelector('.nav a[href="/admin/notice"]');
+      if (current) current.classList.add('active');
+    })();
+  </script>
+
 </body>
 
 </html>

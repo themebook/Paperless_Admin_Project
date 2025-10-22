@@ -158,6 +158,12 @@
 
   <script>
     (function () {
+      document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+      const curr = document.querySelector('.nav a[href="/admin/document_list"]');
+      if (curr) curr.classList.add('active');
+    })();
+    
+    (function () {
       const grid = document.querySelector('.attach-grid');
       const lb = document.getElementById('imageLightbox');
       const lbImg = document.getElementById('lightboxImg');

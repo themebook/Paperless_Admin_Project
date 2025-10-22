@@ -165,12 +165,13 @@ public class NoticeController {
     return "notice/notice_edit";
   }
 
-  @PostMapping("/admin/notice_edit/{id}")
+  @PostMapping(value = "/admin/notice_edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Transactional
   public String adminNoticeEditSubmit(@PathVariable Long id,
       @Valid @ModelAttribute("form") NoticeUpdateDto form,
       BindingResult binding,
       RedirectAttributes ra) {
+
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
@@ -182,6 +183,43 @@ public class NoticeController {
 
     form.setNoticeId(id);
     form.applyToEntity(n);
+
+    if (form.getFiles() != null) {
+      for (var file : form.getFiles()) {
+        if (file == null || file.isEmpty())
+          continue;
+
+        String original = Optional.ofNullable(file.getOriginalFilename()).orElse("file");
+        String safeName = original.isBlank() ? "file" : original;
+        String contentType = (file.getContentType() != null)
+            ? file.getContentType()
+            : "application/octet-stream";
+
+        String objectKey = buildObjectKey(safeName);
+
+        try (InputStream in = file.getInputStream()) {
+          minioClient.putObject(
+              PutObjectArgs.builder()
+                  .bucket(bucket)
+                  .object(objectKey)
+                  .contentType(contentType)
+                  .stream(in, file.getSize(), -1)
+                  .build());
+        } catch (Exception e) {
+          throw new RuntimeException("파일 업로드 실패: " + safeName, e);
+        }
+
+        attachmentRepository.save(
+            Attachment.builder()
+                .targetType("NOTICE")
+                .targetId(id)
+                .fileUri(objectKey)
+                .fileName(safeName)
+                .mimeType(contentType)
+                .fileSize(file.getSize())
+                .build());
+      }
+    }
 
     ra.addFlashAttribute("msg", "수정되었습니다.");
     return "redirect:/admin/notice_detail/" + id;
