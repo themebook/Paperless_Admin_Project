@@ -89,7 +89,7 @@ public class PaperlessDocController {
     docRepository.save(entity);
 
     ra.addFlashAttribute("msg", "담당자가 변경되었습니다.");
-    return "redirect:/admin/paperless_doc_detail/" + plId;
+    return "redirect:admin/paperless_doc_detail/" + plId;
   }
 
   @PostMapping("admin/paperless_doc_detail/{plId}/status")
@@ -112,7 +112,7 @@ public class PaperlessDocController {
   }
   default -> throw new IllegalArgumentException("알 수 없는 action: " + action);
 }
-    return "redirect:/documet/document_detail/" + plId;
+    return "redirect:documet/document_detail/" + plId;
   }
 
   private Long resolveAdminId(Authentication auth) {

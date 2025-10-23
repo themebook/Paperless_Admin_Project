@@ -134,7 +134,7 @@ public class SinmungoController {
     sinmungoRepository.save(entity);
 
     ra.addFlashAttribute("msg", "담당자가 변경되었습니다.");
-    return "redirect:/admin/sinmungo_detail/" + id;
+    return "redirect:admin/sinmungo_detail/" + id;
   }
 
   @PostMapping("/admin/sinmungo_detail/{id}/status")
@@ -185,7 +185,7 @@ public class SinmungoController {
       default -> throw new IllegalArgumentException("알 수 없는 action: " + action);
     }
 
-    return "redirect:/admin/sinmungo_detail/" + id;
+    return "redirect:admin/sinmungo_detail/" + id;
   }
 
   @Getter
