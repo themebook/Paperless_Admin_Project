@@ -134,7 +134,7 @@ public class SinmungoController {
     sinmungoRepository.save(entity);
 
     ra.addFlashAttribute("msg", "담당자가 변경되었습니다.");
-    return "redirect:admin/sinmungo_detail/" + id;
+    return "redirect:/admin/sinmungo_detail/" + id;
   }
 
   @PostMapping("/admin/sinmungo_detail/{id}/status")
@@ -149,8 +149,8 @@ public class SinmungoController {
     Sinmungo e = sinmungoRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("민원 없음: " + id));
 
-    if (!"접수".equals(e.getStatus())) {
-      throw new IllegalStateException("접수 상태가 아닌 민원은 수정/상태 변경이 불가합니다.");
+    if (!("접수".equals(e.getStatus()) || "보류".equals(e.getStatus()))) {
+      throw new IllegalStateException("접수/보류 상태에서만 변경 가능합니다.");
     }
 
     if (e.getAdminId() == null) {
@@ -185,7 +185,7 @@ public class SinmungoController {
       default -> throw new IllegalArgumentException("알 수 없는 action: " + action);
     }
 
-    return "redirect:admin/sinmungo_detail/" + id;
+    return "redirect:/admin/sinmungo_detail/" + id;
   }
 
   @Getter

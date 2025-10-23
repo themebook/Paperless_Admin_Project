@@ -139,6 +139,7 @@
 
         <div class="center" style="display:flex;gap:8px;flex-wrap:wrap;" th:if="${dto.status == '접수' or dto.status == '보류'}">
           <form id="statusForm" th:action="@{|/admin/sinmungo_detail/${dto.smgId}/status|}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="action" id="statusAction" />
             <input type="hidden" name="rejectReason" id="rejectReasonHidden" />
             <input type="hidden" name="adminAnswer" id="answerHidden" />
