@@ -80,6 +80,6 @@ public class DashboardController {
     model.addAttribute("statusLabels", orderedLabels);
     model.addAttribute("statusCounts", orderedCounts);
 
-    return "/dashboard/dashboard";
+    return "dashboard/dashboard";
   }
 }

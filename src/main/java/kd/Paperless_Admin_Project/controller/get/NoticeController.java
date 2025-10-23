@@ -58,7 +58,7 @@ public class NoticeController {
     model.addAttribute("totalCount", result.getTotalElements());
     model.addAttribute("q", q);
 
-    return "/notice/notice_list";
+    return "notice/notice_list";
   }
 
   @Transactional
@@ -80,7 +80,7 @@ public class NoticeController {
     model.addAttribute("prev", prev.isEmpty() ? null : prev.get(0));
     model.addAttribute("next", next.isEmpty() ? null : next.get(0));
 
-    return "/notice/notice_detail";
+    return "notice/notice_detail";
   }
 
   @GetMapping("/admin/notice_write")
@@ -91,7 +91,7 @@ public class NoticeController {
       form.setTargetAudience("ADMIN");
       model.addAttribute("form", form);
     }
-    return "/notice/notice_write";
+    return "notice/notice_write";
   }
 
   @PostMapping(value = "/admin/notice_write", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -105,7 +105,7 @@ public class NoticeController {
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
-      return "redirect:/admin/notice_write";
+      return "redirect:admin/notice_write";
     }
 
     Notice saved = noticeRepository.save(form.toEntity(adminId));
@@ -147,7 +147,7 @@ public class NoticeController {
     }
 
     ra.addFlashAttribute("msg", "등록되었습니다.");
-    return "redirect:/admin/notice_detail/" + noticeId;
+    return "redirect:admin/notice_detail/" + noticeId;
   }
 
   @Transactional(readOnly = true)
@@ -162,7 +162,7 @@ public class NoticeController {
         .findByTargetTypeAndTargetIdOrderByFileIdAsc("NOTICE", id);
     model.addAttribute("files", files);
 
-    return "/notice/notice_edit";
+    return "notice/notice_edit";
   }
 
   @PostMapping(value = "/admin/notice_edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -175,7 +175,7 @@ public class NoticeController {
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
-      return "redirect:/admin/notice_edit/" + id;
+      return "redirect:admin/notice_edit/" + id;
     }
 
     Notice n = noticeRepository.findAdminById(id)
@@ -222,7 +222,7 @@ public class NoticeController {
     }
 
     ra.addFlashAttribute("msg", "수정되었습니다.");
-    return "redirect:/admin/notice_detail/" + id;
+    return "redirect:admin/notice_detail/" + id;
   }
 
   /** 객체 키 규칙: yyyy/MM/dd/uuid__원본파일명 */
@@ -257,6 +257,6 @@ public class NoticeController {
     noticeRepository.deleteById(id);
 
     ra.addFlashAttribute("msg", "삭제되었습니다.");
-    return "redirect:/admin/notice";
+    return "redirect:admin/notice";
   }
 }

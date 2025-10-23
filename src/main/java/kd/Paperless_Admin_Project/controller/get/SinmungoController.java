@@ -74,7 +74,7 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    return "/sinmungo/sinmungo_list";
+    return "sinmungo/sinmungo_list";
   }
 
   @GetMapping("/admin/sinmungo_list/{adminId}")
@@ -103,7 +103,7 @@ public class SinmungoController {
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", st == null ? "" : st);
 
-    return "/sinmungo/sinmungo_my";
+    return "sinmungo/sinmungo_my";
   }
 
   @GetMapping("/admin/sinmungo_detail/{id}")
@@ -134,7 +134,7 @@ public class SinmungoController {
     sinmungoRepository.save(entity);
 
     ra.addFlashAttribute("msg", "담당자가 변경되었습니다.");
-    return "redirect:/admin/sinmungo_detail/" + id;
+    return "redirect:admin/sinmungo_detail/" + id;
   }
 
   @PostMapping("/admin/sinmungo_detail/{id}/status")
@@ -185,7 +185,7 @@ public class SinmungoController {
       default -> throw new IllegalArgumentException("알 수 없는 action: " + action);
     }
 
-    return "redirect:/admin/sinmungo_detail/" + id;
+    return "redirect:admin/sinmungo_detail/" + id;
   }
 
   @Getter
@@ -260,6 +260,6 @@ public class SinmungoController {
     model.addAttribute("totalPages", dtoPage.getTotalPages());
     model.addAttribute("q", kw == null ? "" : kw);
     model.addAttribute("status", "접수");
-    return "/rpa/rpa_sinmungo_list";
+    return "rpa/rpa_sinmungo_list";
   }
 }

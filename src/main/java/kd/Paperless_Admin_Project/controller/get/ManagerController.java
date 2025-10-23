@@ -48,6 +48,6 @@ public class ManagerController {
 
     model.addAttribute("adminOptions", adminOptions);
 
-    return "/manager/manager";
+    return "manager/manager";
   }
 }
