@@ -105,7 +105,7 @@ public class NoticeController {
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
-      return "redirect:admin/notice_write";
+      return "redirect:/admin/notice_write";
     }
 
     Notice saved = noticeRepository.save(form.toEntity(adminId));
@@ -147,7 +147,7 @@ public class NoticeController {
     }
 
     ra.addFlashAttribute("msg", "등록되었습니다.");
-    return "redirect:admin/notice_detail/" + noticeId;
+    return "redirect:/admin/notice_detail/" + noticeId;
   }
 
   @Transactional(readOnly = true)
@@ -175,7 +175,7 @@ public class NoticeController {
     if (binding.hasErrors()) {
       ra.addFlashAttribute("org.springframework.validation.BindingResult.form", binding);
       ra.addFlashAttribute("form", form);
-      return "redirect:admin/notice_edit/" + id;
+      return "redirect:/admin/notice_edit/" + id;
     }
 
     Notice n = noticeRepository.findAdminById(id)
@@ -222,7 +222,7 @@ public class NoticeController {
     }
 
     ra.addFlashAttribute("msg", "수정되었습니다.");
-    return "redirect:admin/notice_detail/" + id;
+    return "redirect:/admin/notice_detail/" + id;
   }
 
   /** 객체 키 규칙: yyyy/MM/dd/uuid__원본파일명 */
@@ -257,6 +257,6 @@ public class NoticeController {
     noticeRepository.deleteById(id);
 
     ra.addFlashAttribute("msg", "삭제되었습니다.");
-    return "redirect:admin/notice";
+    return "redirect:/admin/notice";
   }
 }
